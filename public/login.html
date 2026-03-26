@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reality Check — Your Productivity OS</title>
+<meta name="description" content="Track your habits, boost productivity, and build streaks with Reality Check — the ultimate productivity companion.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #030711;
+  --bg2: #060c1a;
+  --glass: rgba(255,255,255,0.035);
+  --glass-border: rgba(255,255,255,0.07);
+  --c-cyan: #00e5ff;
+  --c-violet: #a855f7;
+  --c-green: #22d3a0;
+  --c-rose: #f43f5e;
+  --c-amber: #f59e0b;
+  --c-blue: #3b82f6;
+  --text: #f0f4ff;
+  --text-2: #8ba3c7;
+  --text-3: #3d546e;
+  --font: 'Outfit', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  display: flex;
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════
+   ANIMATED MESH BACKGROUND
+   ═══════════════════════════════════════ */
+.mesh-bg {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.mesh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  mix-blend-mode: screen;
+  animation: meshFloat linear infinite;
+}
+.mb1 { width: 800px; height: 600px; background: radial-gradient(ellipse, rgba(168,85,247,0.15) 0%, transparent 55%); top: -15%; right: -10%; animation-duration: 22s; }
+.mb2 { width: 700px; height: 700px; background: radial-gradient(ellipse, rgba(0,229,255,0.1) 0%, transparent 55%); bottom: -20%; left: -5%; animation-duration: 28s; animation-delay: -10s; }
+.mb3 { width: 500px; height: 400px; background: radial-gradient(ellipse, rgba(34,211,160,0.08) 0%, transparent 55%); top: 40%; left: 50%; animation-duration: 18s; animation-delay: -5s; }
+.mb4 { width: 400px; height: 400px; background: radial-gradient(ellipse, rgba(244,63,94,0.06) 0%, transparent 55%); bottom: 10%; right: 20%; animation-duration: 25s; animation-delay: -15s; }
+
+@keyframes meshFloat {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25%  { transform: translate(50px, -40px) rotate(90deg) scale(1.06); }
+  50%  { transform: translate(-30px, 50px) rotate(180deg) scale(0.95); }
+  75%  { transform: translate(40px, 20px) rotate(270deg) scale(1.03); }
+  100% { transform: translate(0, 0) rotate(360deg) scale(1); }
+}
+
+/* Grid overlay */
+.grid-bg {
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 20%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+/* Cursor glow */
+.cursor-glow {
+  position: fixed;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,229,255,0.07) 0%, rgba(168,85,247,0.03) 40%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  will-change: transform;
+}
+
+/* Particles */
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.particle {
+  position: absolute; border-radius: 50%;
+  animation: pFloat linear infinite;
+}
+@keyframes pFloat {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 1; transform: translateY(90vh) scale(1); }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-5vh) scale(0.3); opacity: 0; }
+}
+
+/* Connecting lines between particles */
+.particle-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.08), transparent);
+  animation: lineFade 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes lineFade {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* Scanline */
+.scanline {
+  position: fixed; left: 0; right: 0; top: 0;
+  height: 1px; z-index: 999; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.08), rgba(168,85,247,0.06), transparent);
+  animation: scanMove 14s linear infinite;
+  opacity: 0.6;
+}
+@keyframes scanMove { 0% { top: -1px; } 100% { top: 100vh; } }
+
+/* ═══════════════════════════════════════
+   SPLIT LAYOUT
+   ═══════════════════════════════════════ */
+.split-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  z-index: 10;
+}
+
+/* LEFT HERO PANEL */
+.hero-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-panel::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 10%; bottom: 10%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(0,229,255,0.15), rgba(168,85,247,0.15), transparent);
+}
+
+/* Hero brand */
+.hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: slideUp 0.8s 0.3s var(--ease) forwards;
+}
+
+.hero-gem {
+  width: 56px; height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--c-cyan), var(--c-violet));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 0 40px rgba(0,229,255,0.3), 0 0 80px rgba(168,85,247,0.15);
+  position: relative;
+  animation: gemPulse 4s ease-in-out infinite;
+}
+.hero-gem::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 20px;
+  background: conic-gradient(from 0deg, var(--c-cyan), var(--c-violet), var(--c-green), var(--c-cyan));
+  z-index: -1;
+  animation: borderSpin 4s linear infinite;
+  opacity: 0.5;
+}
+@keyframes borderSpin { to { transform: rotate(360deg); } }
+@keyframes gemPulse {
+  0%, 100% { box-shadow: 0 0 40px rgba(0,229,255,0.3), 0 0 80px rgba(168,85,247,0.15); }
+  50% { box-shadow: 0 0 60px rgba(0,229,255,0.5), 0 0 100px rgba(168,85,247,0.25); }
+}
+
+.hero-brand-text {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: linear-gradient(90deg, var(--c-cyan) 0%, var(--text) 60%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-brand-sub {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Hero headline */
+.hero-headline {
+  opacity: 0;
+  animation: slideUp 0.9s 0.5s var(--ease) forwards;
+}
+.hero-headline h1 {
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+}
+.hero-headline h1 .grad {
+  background: linear-gradient(90deg, var(--c-cyan), var(--c-violet) 50%, var(--c-green));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradShift 6s ease-in-out infinite;
+}
+@keyframes gradShift {
+  0%,100% { background-position: 0% 0%; }
+  50% { background-position: 100% 0%; }
+}
+
+.hero-tagline {
+  font-size: 1.05rem;
+  color: var(--text-2);
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: slideUp 0.9s 0.65s var(--ease) forwards;
+}
+
+.typing-text {
+  display: inline;
+}
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--c-cyan);
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* Feature cards */
+.hero-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  opacity: 0;
+  animation: slideUp 0.9s 0.8s var(--ease) forwards;
+}
+
+.hero-feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  transition: all 0.35s var(--ease);
+  cursor: default;
+}
+.hero-feature:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(0,229,255,0.15);
+  transform: translateX(8px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+.feature-icon {
+  width: 44px; height: 44px;
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  transition: transform 0.4s var(--ease-back);
+}
+.hero-feature:hover .feature-icon {
+  transform: scale(1.15) rotate(-8deg);
+}
+
+.feature-text h3 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.feature-text p {
+  font-size: 0.72rem;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+/* Floating badges */
+.floating-badges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.float-badge {
+  position: absolute;
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--mono);
+  border: 1px solid;
+  backdrop-filter: blur(12px);
+  animation: floatBadge 8s ease-in-out infinite;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+.float-badge:hover { opacity: 1; }
+.fb1 { top: 15%; right: 12%; border-color: rgba(0,229,255,0.25); color: var(--c-cyan); background: rgba(0,229,255,0.06); animation-delay: 0s; }
+.fb2 { top: 35%; right: 5%; border-color: rgba(168,85,247,0.25); color: var(--c-violet); background: rgba(168,85,247,0.06); animation-delay: -2s; }
+.fb3 { bottom: 30%; right: 15%; border-color: rgba(245,158,11,0.25); color: var(--c-amber); background: rgba(245,158,11,0.06); animation-delay: -4s; }
+.fb4 { bottom: 15%; right: 8%; border-color: rgba(34,211,160,0.25); color: var(--c-green); background: rgba(34,211,160,0.06); animation-delay: -6s; }
+
+@keyframes floatBadge {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-12px) rotate(1deg); }
+  50% { transform: translateY(-6px) rotate(-1deg); }
+  75% { transform: translateY(-15px) rotate(0.5deg); }
+}
+
+/* Orbital rings around logo */
+.orbital-wrap {
+  position: absolute;
+  top: 50%;
+  right: 15%;
+  transform: translate(50%, -50%);
+  width: 300px; height: 300px;
+  pointer-events: none;
+}
+.orbital-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 50%;
+  animation: orbitSpin linear infinite;
+}
+.orbital-ring:nth-child(1) { inset: 20px; animation-duration: 20s; border-color: rgba(0,229,255,0.06); }
+.orbital-ring:nth-child(2) { inset: 50px; animation-duration: 15s; animation-direction: reverse; border-color: rgba(168,85,247,0.05); }
+.orbital-ring:nth-child(3) { inset: 80px; animation-duration: 25s; border-color: rgba(34,211,160,0.04); }
+
+.orbital-dot {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  top: -3px; left: 50%;
+}
+.orbital-ring:nth-child(1) .orbital-dot { background: var(--c-cyan); box-shadow: 0 0 12px var(--c-cyan); }
+.orbital-ring:nth-child(2) .orbital-dot { background: var(--c-violet); box-shadow: 0 0 12px var(--c-violet); }
+.orbital-ring:nth-child(3) .orbital-dot { background: var(--c-green); box-shadow: 0 0 12px var(--c-green); }
+
+@keyframes orbitSpin { to { transform: rotate(360deg); } }
+
+/* Stats row */
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 40px;
+  opacity: 0;
+  animation: slideUp 0.9s 0.95s var(--ease) forwards;
+}
+.hero-stat {
+  text-align: center;
+}
+.hero-stat-val {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--c-cyan), var(--c-violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-stat-lbl {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════
+   RIGHT AUTH PANEL
+   ═══════════════════════════════════════ */
+.auth-panel {
+  width: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+
+/* Animated border card */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  border-radius: 28px;
+  padding: 3px;
+  animation: cardIn 0.8s 0.2s var(--ease) both;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 10%,
+    rgba(0,229,255,0.3) 25%,
+    rgba(168,85,247,0.3) 50%,
+    rgba(34,211,160,0.2) 75%,
+    transparent 90%
+  );
+  animation: rotateBorder 4s linear infinite;
+  opacity: 0.7;
+  z-index: -1;
+}
+@keyframes rotateBorder {
+  to { --border-angle: 360deg; }
+}
+/* Fallback: use pseudo rotation */
+.login-card::before {
+  animation: spinBorder 4s linear infinite;
+}
+@keyframes spinBorder {
+  to { transform: rotate(360deg); }
+}
+/* Fix: use a wrapper approach */
+.login-card {
+  background: transparent;
+  overflow: hidden;
+}
+
+.card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  z-index: 0;
+  overflow: hidden;
+}
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    rgba(0,229,255,0.25),
+    transparent,
+    rgba(168,85,247,0.25),
+    transparent,
+    rgba(34,211,160,0.2),
+    transparent
+  );
+  animation: spinGlow 4s linear infinite;
+}
+@keyframes spinGlow { to { transform: rotate(360deg); } }
+
+.card-inner {
+  position: relative;
+  z-index: 1;
+  background: rgba(6,12,26,0.92);
+  border-radius: 26px;
+  padding: 44px 38px;
+  backdrop-filter: blur(40px);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Auth logo inside card */
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.auth-logo-gem {
+  width: 48px; height: 48px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--c-cyan), var(--c-violet));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 0 30px rgba(0,229,255,0.3);
+  animation: gemPulse 4s ease-in-out infinite;
+}
+.auth-logo-text {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(90deg, var(--c-cyan), var(--text));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.auth-welcome {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.auth-welcome h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-2);
+  margin-top: 12px;
+}
+.auth-welcome p {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+/* Toggle */
+.auth-toggle {
+  display: flex;
+  background: rgba(255,255,255,0.03);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 28px;
+  border: 1px solid var(--glass-border);
+  position: relative;
+}
+.auth-toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  border-radius: 10px;
+  background: rgba(0,229,255,0.1);
+  box-shadow: inset 0 0 0 1px rgba(0,229,255,0.2), 0 0 20px rgba(0,229,255,0.05);
+  transition: transform 0.35s var(--ease);
+  z-index: 0;
+}
+.auth-toggle-slider.right {
+  transform: translateX(100%);
+}
+
+.auth-toggle-btn {
+  flex: 1;
+  padding: 11px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 0.3s;
+  letter-spacing: 0.01em;
+  position: relative;
+  z-index: 1;
+}
+.auth-toggle-btn.active { color: var(--c-cyan); }
+.auth-toggle-btn:hover:not(.active) { color: var(--text-2); }
+
+/* Form */
+.auth-form { display: flex; flex-direction: column; gap: 20px; }
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  position: relative;
+}
+.field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.field-label-icon {
+  font-size: 0.8rem;
+}
+
+.field-input-wrap {
+  position: relative;
+}
+.field-input {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 15px 18px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.92rem;
+  outline: none;
+  transition: all 0.35s var(--ease);
+}
+.field-input::placeholder { color: var(--text-3); transition: color 0.3s; }
+.field-input:focus::placeholder { color: transparent; }
+.field-input:focus {
+  border-color: var(--c-cyan);
+  background: rgba(0,229,255,0.03);
+  box-shadow:
+    0 0 0 4px rgba(0,229,255,0.06),
+    0 0 30px rgba(0,229,255,0.05);
+}
+
+.field-focus-line {
+  position: absolute;
+  bottom: 0; left: 14px; right: 14px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--c-cyan), var(--c-violet));
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.4s var(--ease);
+}
+.field-input:focus ~ .field-focus-line {
+  transform: scaleX(1);
+}
+
+/* Auth Submit */
+.auth-submit {
+  margin-top: 8px;
+  padding: 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--c-cyan), #007cf0);
+  color: #000;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  box-shadow: 0 4px 24px rgba(0,229,255,0.25);
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+}
+.auth-submit::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: none;
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+.auth-submit::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent 60%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.auth-submit:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 50px rgba(0,229,255,0.45);
+}
+.auth-submit:hover::after { opacity: 1; }
+.auth-submit:active { transform: translateY(-1px); }
+.auth-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Ripple on click */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: scale(0);
+  animation: rippleOut 0.6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes rippleOut {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Auth error */
+.auth-error {
+  color: var(--c-rose);
+  font-size: 0.82rem;
+  text-align: center;
+  min-height: 20px;
+  font-weight: 600;
+  animation: shake 0.35s ease;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+/* Auth footer */
+.auth-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.78rem;
+  color: var(--text-3);
+}
+.auth-footer a {
+  color: var(--c-cyan);
+  text-decoration: none;
+  font-weight: 700;
+  position: relative;
+}
+.auth-footer a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 100%; height: 1px;
+  background: var(--c-cyan);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--ease);
+}
+.auth-footer a:hover::after { transform: scaleX(1); }
+
+/* Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 4px 0;
+}
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+}
+.auth-divider-text {
+  font-size: 0.68rem;
+  color: var(--text-3);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Trust badges */
+.trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.trust-badge-icon {
+  font-size: 0.85rem;
+}
+
+/* Success flash */
+.success-flash {
+  position: fixed; inset: 0;
+  background: rgba(0,229,255,0.06);
+  pointer-events: none; z-index: 999;
+  animation: flashOut 0.6s ease forwards;
+}
+@keyframes flashOut { to { opacity: 0; } }
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════ */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .hero-panel { padding: 40px 50px; }
+  .hero-headline h1 { font-size: 2.2rem; }
+  .orbital-wrap { display: none; }
+  .floating-badges { display: none; }
+  .auth-panel { width: 460px; padding: 30px; }
+}
+
+@media (max-width: 768px) {
+  body { overflow-y: auto; }
+  .split-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  .hero-panel {
+    padding: 32px 24px 20px;
+    order: 1;
+  }
+  .hero-panel::after { display: none; }
+  .hero-headline h1 { font-size: 1.85rem; line-height: 1.15; }
+  .hero-brand { margin-bottom: 24px; }
+  .hero-gem { width: 44px; height: 44px; font-size: 20px; }
+  .hero-brand-text { font-size: 1.2rem; }
+  .hero-tagline { font-size: 0.88rem; margin-bottom: 20px; }
+  .hero-features {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .hero-feature {
+    padding: 10px 14px;
+    border-radius: 12px;
+    flex: 1;
+    min-width: 140px;
+  }
+  .feature-icon { width: 34px; height: 34px; font-size: 16px; border-radius: 10px; }
+  .feature-text h3 { font-size: 0.75rem; }
+  .feature-text p { display: none; }
+  .hero-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  .hero-stat-val { font-size: 1.3rem; }
+  .hero-stat-lbl { font-size: 0.58rem; }
+  .orbital-wrap { display: none; }
+  .floating-badges { display: none; }
+  .auth-panel {
+    width: 100%;
+    padding: 0 16px 40px;
+    order: 2;
+  }
+  .login-card { max-width: 100%; }
+  .card-inner { padding: 28px 22px; }
+  .auth-logo-gem { width: 40px; height: 40px; font-size: 18px; }
+  .auth-logo-text { font-size: 1.15rem; }
+  .auth-welcome h2 { font-size: 1rem; }
+  .auth-welcome { margin-bottom: 24px; }
+  .auth-toggle-btn { padding: 10px 0; font-size: 0.82rem; }
+  .field-input { padding: 14px 16px; font-size: 0.9rem; }
+  .auth-submit { padding: 15px; font-size: 0.9rem; }
+  .trust-row { gap: 14px; margin-top: 20px; padding-top: 16px; }
+  .trust-badge { font-size: 0.6rem; }
+}
+
+@media (max-width: 420px) {
+  .hero-panel { padding: 24px 18px 16px; }
+  .hero-headline h1 { font-size: 1.6rem; }
+  .hero-brand { margin-bottom: 18px; gap: 10px; }
+  .hero-gem { width: 38px; height: 38px; font-size: 17px; }
+  .hero-brand-text { font-size: 1.05rem; }
+  .hero-tagline { font-size: 0.82rem; margin-bottom: 16px; }
+  .hero-features { gap: 6px; }
+  .hero-feature { padding: 8px 10px; min-width: 120px; }
+  .feature-icon { width: 28px; height: 28px; font-size: 13px; }
+  .feature-text h3 { font-size: 0.68rem; }
+  .hero-stats { gap: 16px; margin-top: 14px; }
+  .hero-stat-val { font-size: 1.1rem; }
+  .auth-panel { padding: 0 12px 32px; }
+  .card-inner { padding: 24px 18px; }
+  .auth-form { gap: 16px; }
+  .field-input { padding: 13px 14px; font-size: 0.88rem; border-radius: 12px; }
+  .auth-submit { padding: 14px; border-radius: 14px; }
+  .trust-row { flex-wrap: wrap; gap: 10px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.12); border-radius: 99px; }
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<div class="mesh-bg">
+  <div class="mesh-blob mb1"></div>
+  <div class="mesh-blob mb2"></div>
+  <div class="mesh-blob mb3"></div>
+  <div class="mesh-blob mb4"></div>
+</div>
+<div class="grid-bg"></div>
+<div class="particles" id="particles"></div>
+
+<div class="split-layout">
+  <!-- LEFT: Hero -->
+  <div class="hero-panel">
+    <div class="hero-brand">
+      <div class="hero-gem">⚡</div>
+      <div>
+        <div class="hero-brand-text">Reality Check</div>
+        <div class="hero-brand-sub">Productivity OS</div>
+      </div>
+    </div>
+
+    <div class="hero-headline">
+      <h1>Master Your<br><span class="grad">Productivity</span></h1>
+    </div>
+
+    <div class="hero-tagline">
+      <span class="typing-text" id="typed-text"></span><span class="typing-cursor"></span>
+    </div>
+
+    <div class="hero-features">
+      <div class="hero-feature">
+        <div class="feature-icon" style="background: rgba(0,229,255,0.08);">🎯</div>
+        <div class="feature-text">
+          <h3>Smart Task Planning</h3>
+          <p>Plan your day with estimated vs actual time tracking</p>
+        </div>
+      </div>
+      <div class="hero-feature">
+        <div class="feature-icon" style="background: rgba(168,85,247,0.08);">📊</div>
+        <div class="feature-text">
+          <h3>Reality Score™</h3>
+          <p>See how well your plans match reality</p>
+        </div>
+      </div>
+      <div class="hero-feature">
+        <div class="feature-icon" style="background: rgba(245,158,11,0.08);">🏆</div>
+        <div class="feature-text">
+          <h3>Gamification & Streaks</h3>
+          <p>Earn XP, level up, and collect achievement badges</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val" id="hs-users">1.2K+</div>
+        <div class="hero-stat-lbl">Active Users</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">98%</div>
+        <div class="hero-stat-lbl">Satisfaction</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">50K+</div>
+        <div class="hero-stat-lbl">Tasks Completed</div>
+      </div>
+    </div>
+
+    <!-- Floating badges -->
+    <div class="floating-badges">
+      <div class="float-badge fb1">🔥 7-Day Streak</div>
+      <div class="float-badge fb2">⚡ 450 XP</div>
+      <div class="float-badge fb3">🏅 Week Warrior</div>
+      <div class="float-badge fb4">📈 +32% Productivity</div>
+    </div>
+
+    <!-- Orbital -->
+    <div class="orbital-wrap">
+      <div class="orbital-ring"><div class="orbital-dot"></div></div>
+      <div class="orbital-ring"><div class="orbital-dot"></div></div>
+      <div class="orbital-ring"><div class="orbital-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Auth -->
+  <div class="auth-panel">
+    <div class="login-card" id="login-card">
+      <div class="card-glow"><div></div></div>
+      <div class="card-inner">
+        <div class="auth-welcome">
+          <div class="auth-logo">
+            <div class="auth-logo-gem">⚡</div>
+            <span class="auth-logo-text">Reality Check</span>
+          </div>
+          <h2>Welcome back</h2>
+          <p>Sign in to continue your journey</p>
+        </div>
+
+        <div class="auth-toggle">
+          <div class="auth-toggle-slider" id="toggle-slider"></div>
+          <button class="auth-toggle-btn active" id="toggle-login" onclick="setMode('login')">Sign In</button>
+          <button class="auth-toggle-btn" id="toggle-register" onclick="setMode('register')">Register</button>
+        </div>
+
+        <form class="auth-form" id="auth-form" onsubmit="handleSubmit(event)">
+          <div class="field-group">
+            <label class="field-label"><span class="field-label-icon">👤</span> Username</label>
+            <div class="field-input-wrap">
+              <input type="text" class="field-input" id="f-username" placeholder="Enter your username" required minlength="3" autocomplete="username">
+              <div class="field-focus-line"></div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label"><span class="field-label-icon">🔒</span> Password</label>
+            <div class="field-input-wrap">
+              <input type="password" class="field-input" id="f-password" placeholder="Enter your password" required minlength="6" autocomplete="current-password">
+              <div class="field-focus-line"></div>
+            </div>
+          </div>
+          <div class="auth-error" id="auth-error"></div>
+          <button type="submit" class="auth-submit" id="auth-submit">Sign In →</button>
+        </form>
+
+        <div class="auth-footer">
+          <span id="footer-text">Don't have an account? <a href="#" onclick="setMode('register'); return false;">Register</a></span>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust-badge"><span class="trust-badge-icon">🔐</span> Encrypted</div>
+          <div class="trust-badge"><span class="trust-badge-icon">⚡</span> Fast Sync</div>
+          <div class="trust-badge"><span class="trust-badge-icon">🌐</span> Anywhere</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Redirect if already logged in
+if (localStorage.getItem('rc_token')) {
+  window.location.href = '/';
+}
+
+// ── MODE TOGGLE ──
+let mode = 'login';
+
+function setMode(m) {
+  mode = m;
+  const slider = document.getElementById('toggle-slider');
+  document.getElementById('toggle-login').classList.toggle('active', m === 'login');
+  document.getElementById('toggle-register').classList.toggle('active', m === 'register');
+  slider.classList.toggle('right', m === 'register');
+
+  const submit = document.getElementById('auth-submit');
+  submit.textContent = m === 'login' ? 'Sign In →' : 'Create Account →';
+
+  const welcome = document.querySelector('.auth-welcome h2');
+  const welcomeSub = document.querySelector('.auth-welcome p');
+  if (m === 'login') {
+    welcome.textContent = 'Welcome back';
+    welcomeSub.textContent = 'Sign in to continue your journey';
+  } else {
+    welcome.textContent = 'Join Reality Check';
+    welcomeSub.textContent = 'Start tracking your productivity today';
+  }
+
+  document.getElementById('footer-text').innerHTML = m === 'login'
+    ? 'Don\'t have an account? <a href="#" onclick="setMode(\'register\'); return false;">Register</a>'
+    : 'Already have an account? <a href="#" onclick="setMode(\'login\'); return false;">Sign In</a>';
+  document.getElementById('auth-error').textContent = '';
+}
+
+// ── FORM SUBMIT ──
+async function handleSubmit(e) {
+  e.preventDefault();
+  const username = document.getElementById('f-username').value.trim();
+  const password = document.getElementById('f-password').value;
+  const btn = document.getElementById('auth-submit');
+  const errorEl = document.getElementById('auth-error');
+  errorEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = '⏳ Processing...';
+
+  try {
+    const BASE = window.location.origin + '/api';
+    const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
+    const res = await fetch(BASE + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+
+    localStorage.setItem('rc_token', data.token);
+    localStorage.setItem('rc_user', JSON.stringify(data.user));
+
+    // Success flash
+    document.body.insertAdjacentHTML('beforeend', '<div class="success-flash"></div>');
+    btn.textContent = '✅ Success!';
+    btn.style.background = 'linear-gradient(135deg, var(--c-green), #00c090)';
+    setTimeout(() => { window.location.href = '/'; }, 600);
+  } catch (err) {
+    errorEl.textContent = err.message;
+    btn.disabled = false;
+    btn.textContent = mode === 'login' ? 'Sign In →' : 'Create Account →';
+  }
+}
+
+// ── CURSOR GLOW ──
+const glow = document.getElementById('cursor-glow');
+let glowX = 0, glowY = 0, curX = 0, curY = 0;
+document.addEventListener('mousemove', (e) => {
+  curX = e.clientX;
+  curY = e.clientY;
+});
+function animGlow() {
+  glowX += (curX - glowX) * 0.08;
+  glowY += (curY - glowY) * 0.08;
+  glow.style.transform = `translate(${glowX}px, ${glowY}px) translate(-50%, -50%)`;
+  requestAnimationFrame(animGlow);
+}
+animGlow();
+
+// ── 3D TILT EFFECT on login card ──
+const loginCard = document.getElementById('login-card');
+loginCard.addEventListener('mousemove', (e) => {
+  const rect = loginCard.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width - 0.5;
+  const y = (e.clientY - rect.top) / rect.height - 0.5;
+  loginCard.style.transform = `perspective(800px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg)`;
+  loginCard.style.transition = 'transform 0.1s ease';
+});
+loginCard.addEventListener('mouseleave', () => {
+  loginCard.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg)';
+  loginCard.style.transition = 'transform 0.5s ease';
+});
+
+// ── RIPPLE on button ──
+document.getElementById('auth-submit').addEventListener('mousedown', function(e) {
+  const rect = this.getBoundingClientRect();
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  const size = Math.max(rect.width, rect.height);
+  ripple.style.width = ripple.style.height = size + 'px';
+  ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+  ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+  this.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+});
+
+// ── TYPING ANIMATION ──
+const typingPhrases = [
+  'Track habits. Build discipline. Level up your life.',
+  'Plan your time, measure reality, improve daily.',
+  'Gamified habits that keep you coming back.',
+  'Your personal productivity command center.'
+];
+let phraseIdx = 0, charIdx = 0, isDeleting = false;
+const typedEl = document.getElementById('typed-text');
+function typeWriter() {
+  const phrase = typingPhrases[phraseIdx];
+  if (!isDeleting) {
+    typedEl.textContent = phrase.substring(0, charIdx + 1);
+    charIdx++;
+    if (charIdx === phrase.length) {
+      setTimeout(() => { isDeleting = true; typeWriter(); }, 2200);
+      return;
+    }
+    setTimeout(typeWriter, 40 + Math.random() * 30);
+  } else {
+    typedEl.textContent = phrase.substring(0, charIdx);
+    charIdx--;
+    if (charIdx < 0) {
+      isDeleting = false;
+      charIdx = 0;
+      phraseIdx = (phraseIdx + 1) % typingPhrases.length;
+      setTimeout(typeWriter, 400);
+      return;
+    }
+    setTimeout(typeWriter, 20);
+  }
+}
+setTimeout(typeWriter, 1200);
+
+// ── PARTICLES ──
+const pCont = document.getElementById('particles');
+for (let i = 0; i < 60; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  const sz = Math.random() * 2.5 + 0.8;
+  p.style.width = p.style.height = sz + 'px';
+  p.style.animationDuration = (Math.random() * 20 + 14) + 's';
+  p.style.animationDelay = (Math.random() * 18) + 's';
+  const colors = [
+    `rgba(0,229,255,${Math.random() * 0.25 + 0.1})`,
+    `rgba(168,85,247,${Math.random() * 0.2 + 0.1})`,
+    `rgba(34,211,160,${Math.random() * 0.15 + 0.05})`,
+  ];
+  p.style.background = colors[Math.floor(Math.random() * colors.length)];
+  pCont.appendChild(p);
+}
+</script>
+</body>
+</html>

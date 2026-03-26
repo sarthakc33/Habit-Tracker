@@ -1,0 +1,11 @@
+node_modules/
+.env
+
+# Ignore database user files so sensitive info isn't pushed to GitHub
+data/users.json
+data/tasks.json
+data/gamification.json
+data/notifications.json
+
+# If you want to keep the directory but ignore its contents, we can add:
+# !data/.gitkeep

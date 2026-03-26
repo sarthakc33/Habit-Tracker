@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reality Check – Analytics</title>
+  <meta name="description" content="Charts and deep analysis of your productivity patterns over time.">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-container">
+
+  <nav>
+    <a href="/" class="nav-brand">
+      <div class="logo-icon">⚡</div>
+      <div><span class="brand-name">Reality Check</span><span class="brand-sub">Productivity vs Time</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">📊 <span>Dashboard</span></a></li>
+      <li><a href="/planner">📋 <span>Planner</span></a></li>
+      <li><a href="/tracker">⏱️ <span>Tracker</span></a></li>
+      <li><a href="/analytics">📈 <span>Analytics</span></a></li>
+    </ul>
+    <div class="nav-gami" style="display:flex;align-items:center;gap:10px">
+      <div class="level-badge">🎮 <span id="nav-level">Lv.1</span></div>
+      <div class="xp-chip">⚡ <span id="nav-xp">0 XP</span></div>
+      <div class="streak-chip">🔥 <span id="nav-streak">0</span></div>
+      <div class="notif-bell-wrap" style="position:relative;margin-left:8px">
+        <div class="notif-bell" id="notif-bell" onclick="NotificationManager.toggleDropdown()" style="width:36px;height:36px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .2s">🔔<div class="notif-count" id="notif-count" style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:99px;background:#f43f5e;color:#fff;font-size:.6rem;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px">0</div></div>
+        <div class="notif-dropdown" id="notif-dropdown" style="position:absolute;top:44px;right:0;width:320px;max-height:400px;overflow-y:auto;background:rgba(18,18,31,.97);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:0 20px 60px rgba(0,0,0,.5);opacity:0;transform:translateY(-8px);pointer-events:none;transition:all .25s;z-index:200;padding:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:4px"><span style="font-size:.75rem;font-weight:800;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em">🔔 Notifications</span><button onclick="NotificationManager.markAllRead()" style="font-size:.68rem;color:var(--neon-cyan);cursor:pointer;font-weight:600;background:none;border:none">Mark all read</button></div>
+          <div id="notif-dropdown-list"><div style="text-align:center;padding:20px;color:var(--text-muted);font-size:.8rem">No notifications yet</div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:99px;background:var(--bg-card);border:1px solid var(--border)"><div id="user-avatar" style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#6366f1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#000">?</div><span id="nav-username" style="font-size:.75rem;font-weight:700">User</span></div>
+      <div onclick="API.logout()" title="Logout" style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .2s;margin-left:4px">🚪</div>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title"><span>Analytics</span> & Insights</h1>
+        <p class="page-subtitle">Deep-dive into your productivity patterns</p>
+      </div>
+      <button class="btn btn-ghost" onclick="loadAnalytics()">🔄 Refresh</button>
+    </div>
+
+    <!-- Top KPI Row -->
+    <div class="stats-grid" style="margin-bottom:24px;">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(99,102,241,0.15);">🎯</div>
+        <div class="stat-value" id="a-planned">—</div>
+        <div class="stat-label">Total Planned (m)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(6,182,212,0.15);">⏱️</div>
+        <div class="stat-value" id="a-actual">—</div>
+        <div class="stat-label">Total Actual (m)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.15);">📈</div>
+        <div class="stat-value" id="a-prod">—%</div>
+        <div class="stat-label">Productivity</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.15);">🏆</div>
+        <div class="stat-value" id="a-reality">—%</div>
+        <div class="stat-label">Reality Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(239,68,68,0.15);">🕳️</div>
+        <div class="stat-value" id="a-leaks">—</div>
+        <div class="stat-label">Time Leaks</div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-grid" style="margin-bottom:24px;">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:18px;">📊 Planned vs Actual (All Tasks)</h3>
+        <div style="position:relative;height:250px;"><canvas id="chart-bar-full"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:18px;">🥧 Time by Category</h3>
+        <div style="position:relative;height:250px;"><canvas id="chart-pie"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-grid" style="margin-bottom:24px;">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:18px;">📉 7-Day Productivity Trend</h3>
+        <div style="position:relative;height:250px;"><canvas id="chart-line"></canvas></div>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:18px;">🎛️ Time by Priority</h3>
+        <div style="position:relative;height:250px;"><canvas id="chart-priority"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Insights + Leaks -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;">
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">🤖 AI Insights</h3>
+        <div id="a-insights-list">
+          <div class="insight-card info">
+            <span class="insight-icon">ℹ️</span>
+            <span class="insight-text">Loading insights...</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">🕳️ Time Leaks</h3>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;">Tasks that took 50%+ more than estimated</p>
+        <div id="a-leaks-list">
+          <div class="empty-state" style="padding:20px 0;">
+            <p>No leaks yet. Loading...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/analytics.js"></script>
+</body>
+</html>
