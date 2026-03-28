@@ -9,3 +9,6 @@ data/notifications.json
 
 # If you want to keep the directory but ignore its contents, we can add:
 !data/.gitkeep
+
+# Security Keys
+serviceAccountKey.json
