@@ -6,6 +6,7 @@
   <title>Reality Check – Analytics</title>
   <meta name="description" content="Charts and deep analysis of your productivity patterns over time.">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/calendar-heatmap.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -46,6 +47,13 @@
       </div>
       <button class="btn btn-ghost" onclick="loadAnalytics()">🔄 Refresh</button>
     </div>
+
+    <!-- Habit Heatmap Section -->
+    <section class="analytics-section" style="margin-bottom: 30px;">
+      <h2 style="font-family:var(--font-display);font-weight:700;margin-bottom:8px;">🔥 Habit Consistency</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">Your day-by-day completion pattern for recurring habits</p>
+      <div id="heatmapContainer"></div>
+    </section>
 
     <!-- Top KPI Row -->
     <div class="stats-grid" style="margin-bottom:24px;">
@@ -126,6 +134,15 @@
 
 <script src="/js/api.js"></script>
 <script src="/js/notifications.js"></script>
+<script src="/js/habitHeatmap.js"></script>
 <script src="/js/analytics.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('heatmapContainer');
+    if (container) {
+      new HabitHeatmap(container);
+    }
+  });
+</script>
 </body>
 </html>

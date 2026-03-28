@@ -13,6 +13,16 @@ function destroyChart(key) {
   if (charts[key]) { charts[key].destroy(); delete charts[key]; }
 }
 
+function createGradient(ctx, colorHex, opacityStart=0.8, opacityEnd=0.0) {
+  const r = parseInt(colorHex.slice(1, 3), 16);
+  const g = parseInt(colorHex.slice(3, 5), 16);
+  const b = parseInt(colorHex.slice(5, 7), 16);
+  const grad = ctx.createLinearGradient(0, 0, 0, 300);
+  grad.addColorStop(0, `rgba(${r},${g},${b},${opacityStart})`);
+  grad.addColorStop(1, `rgba(${r},${g},${b},${opacityEnd})`);
+  return grad;
+}
+
 async function loadAnalytics() {
   try {
     const summary = await API.getSummary();
@@ -47,8 +57,8 @@ function renderBarFull(tasks) {
     data: {
       labels: tasks.map(t => t.name),
       datasets: [
-        { label: 'Planned (min)', data: tasks.map(t => t.planned), backgroundColor: 'rgba(99,102,241,0.65)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 6 },
-        { label: 'Actual (min)', data: tasks.map(t => t.actual), backgroundColor: 'rgba(6,182,212,0.65)', borderColor: '#06b6d4', borderWidth: 1, borderRadius: 6 }
+        { label: 'Planned (min)', data: tasks.map(t => t.planned), backgroundColor: (context) => createGradient(context.chart.ctx, '#a855f7', 0.8, 0.1), borderColor: '#a855f7', borderWidth: 2, borderRadius: 8 },
+        { label: 'Actual (min)', data: tasks.map(t => t.actual), backgroundColor: (context) => createGradient(context.chart.ctx, '#00e5ff', 0.8, 0.1), borderColor: '#00e5ff', borderWidth: 2, borderRadius: 8 }
       ]
     },
     options: {
@@ -103,9 +113,9 @@ function renderLineTrend(trend) {
         {
           label: 'Productivity %',
           data: trend.map(d => d.score),
-          borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)',
+          borderColor: '#10b981', backgroundColor: (context) => createGradient(context.chart.ctx, '#10b981', 0.4, 0.0),
           tension: 0.4, fill: true, pointBackgroundColor: '#10b981',
-          pointRadius: 5, pointHoverRadius: 7
+          pointRadius: 5, pointHoverRadius: 7, pointBorderWidth: 2, pointBorderColor: '#fff'
         },
         {
           label: 'Planned (min)',
@@ -149,9 +159,13 @@ function renderPriorityChart(byPriority) {
           parseFloat((byPriority.Medium || 0).toFixed(1)),
           parseFloat((byPriority.Low || 0).toFixed(1))
         ],
-        backgroundColor: ['rgba(239,68,68,0.6)', 'rgba(245,158,11,0.6)', 'rgba(16,185,129,0.6)'],
+        backgroundColor: [
+          (context) => createGradient(context.chart.ctx, '#ef4444', 0.8, 0.2), 
+          (context) => createGradient(context.chart.ctx, '#f59e0b', 0.8, 0.2), 
+          (context) => createGradient(context.chart.ctx, '#10b981', 0.8, 0.2)
+        ],
         borderColor: ['#ef4444', '#f59e0b', '#10b981'],
-        borderWidth: 1, borderRadius: 8
+        borderWidth: 2, borderRadius: 8, borderSkipped: false
       }]
     },
     options: {

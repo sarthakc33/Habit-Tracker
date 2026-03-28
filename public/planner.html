@@ -6,6 +6,7 @@
   <title>Reality Check – Task Planner</title>
   <meta name="description" content="Plan your daily tasks with estimated time and priority levels.">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/calendar-heatmap.css">
   <style>
     .recurring-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.15);border-radius:var(--radius-md);cursor:pointer;transition:all .2s}
     .recurring-toggle:hover{background:rgba(168,85,247,.1)}
@@ -36,6 +37,15 @@
     .logout-btn{width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all .2s;margin-left:6px}
     .logout-btn:hover{background:rgba(239,68,68,.15)}
     .badge-recurring{background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.3)}
+
+    /* TIMELINE STYLES */
+    .timeline-wrap { position: relative; padding-left: 28px; margin-top: 10px; }
+    .timeline-wrap::before { content: ''; position: absolute; left: 8px; top: 20px; bottom: 20px; width: 2px; background: linear-gradient(to bottom, var(--neon-purple), var(--neon-cyan), transparent); opacity: 0.5; border-radius: 2px; }
+    .timeline-item { position: relative; margin-bottom: 12px; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: grab; }
+    .timeline-item:active { cursor: grabbing; transform: scale(0.98); }
+    .timeline-item::before { content: ''; position: absolute; left: -25px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; border-radius: 50%; background: var(--bg-primary); border: 2px solid var(--item-color, var(--neon-cyan)); box-shadow: 0 0 12px var(--item-color, var(--neon-cyan)); z-index: 2; transition: all 0.3s; }
+    .timeline-item:hover::before { transform: translateY(-50%) scale(1.4); }
+    .timeline-item:hover { transform: translateX(6px); }
   </style>
 </head>
 <body>
@@ -91,6 +101,17 @@
       <div class="stat-card"><div class="stat-icon" style="background:rgba(6,182,212,.15)">🎯</div><div class="stat-value" id="p-time">0h</div><div class="stat-label">Total Est. Time</div></div>
     </div>
 
+    <!-- Calendar Strip -->
+    <div id="calendarStripContainer" style="margin-bottom: 20px;"></div>
+    
+    <!-- Date Section Header -->
+    <div class="date-section-header" id="dateSectionHeader" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="date-section-header__label" id="dateSectionLabel" style="font-size: 1.2rem; font-weight: 700;">Today</span>
+        <span class="date-section-header__badge date-section-header__badge--today" id="dateSectionBadge" style="padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; background: rgba(99,102,241,0.15); color: #6366f1;">Today</span>
+      </div>
+    </div>
+
     <div class="card" style="padding:0;overflow:hidden"><div id="task-list-container" style="padding:8px"><div class="empty-state" id="empty-planner"><div class="empty-icon">📋</div><h3>No tasks yet!</h3><p>Click "Add New Task" to start planning your day.</p><button class="btn btn-primary" style="margin-top:16px" onclick="openAddModal()">+ Add Task</button></div></div></div>
     <div style="height:40px"></div>
   </div>
@@ -144,6 +165,7 @@
 </div>
 <script src="/js/api.js"></script>
 <script src="/js/notifications.js"></script>
+<script src="/js/calendarStrip.js"></script>
 <script src="/js/planner.js"></script>
 </body>
 </html>

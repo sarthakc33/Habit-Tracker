@@ -3,35 +3,35 @@
    Dark Neon Theme + Glassmorphism
    ============================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap');
 
 /* ---- CSS Variables ---- */
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #0f0f1a;
+  --bg-primary: #050810;
+  --bg-secondary: #080d1a;
   --bg-card: rgba(255,255,255,0.04);
   --bg-card-hover: rgba(255,255,255,0.07);
   --border: rgba(255,255,255,0.08);
-  --border-glow: rgba(99,102,241,0.4);
+  --border-glow: rgba(0,245,255,0.4);
 
-  --neon-purple: #6366f1;
-  --neon-blue: #3b82f6;
-  --neon-cyan: #06b6d4;
-  --neon-green: #10b981;
-  --neon-yellow: #f59e0b;
-  --neon-red: #ef4444;
-  --neon-pink: #ec4899;
+  --neon-purple: #bf00ff;
+  --neon-cyan: #00f5ff;
+  --neon-blue: #00f5ff;
+  --neon-green: #00ff88;
+  --neon-yellow: #ff6b35;
+  --neon-red: #ff006e;
+  --neon-pink: #ff006e;
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #475569;
+  --text-primary: #e8eaf6;
+  --text-secondary: rgba(232,234,246,0.5);
+  --text-muted: rgba(232,234,246,0.3);
 
-  --priority-high: #ef4444;
-  --priority-medium: #f59e0b;
-  --priority-low: #10b981;
+  --priority-high: var(--neon-red);
+  --priority-medium: var(--neon-yellow);
+  --priority-low: var(--neon-green);
 
-  --font-main: 'Inter', sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
+  --font-main: 'Rajdhani', sans-serif;
+  --font-display: 'Orbitron', monospace;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -41,9 +41,9 @@
   --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
   --transition-slow: all 0.4s cubic-bezier(0.4,0,0.2,1);
 
-  --shadow-glow: 0 0 20px rgba(99,102,241,0.15);
+  --shadow-glow: 0 0 20px rgba(0,245,255,0.15);
   --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
-  --shadow-hover: 0 8px 40px rgba(99,102,241,0.2);
+  --shadow-hover: 0 8px 40px rgba(0,245,255,0.2);
 }
 
 /* ---- Reset & Base ---- */
@@ -412,52 +412,30 @@ select.form-control option { background: #1a1a2e; color: var(--text-primary); }
 }
 .score-ring-label .score-sub { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; }
 
-/* ---- Task Item ---- */
-.task-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  animation: taskSlideIn 0.3s ease-out;
-}
-@keyframes taskSlideIn {
-  from { opacity:0; transform: translateY(10px); }
-  to { opacity:1; transform: translateY(0); }
-}
-.task-item:hover {
-  border-color: var(--border-glow);
-  background: var(--bg-card-hover);
-  transform: translateX(3px);
-}
-.task-item.completed { opacity: 0.6; }
-.task-item.completed .task-name { text-decoration: line-through; color: var(--text-muted); }
-
-.task-priority-bar {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 3px;
-  border-radius: 3px 0 0 3px;
-}
-.task-priority-bar.high { background: var(--priority-high); box-shadow: 0 0 8px var(--priority-high); }
-.task-priority-bar.medium { background: var(--priority-medium); box-shadow: 0 0 8px var(--priority-medium); }
-.task-priority-bar.low { background: var(--priority-low); box-shadow: 0 0 8px var(--priority-low); }
-
-.task-info { flex: 1; min-width: 0; }
-.task-name { font-size: 0.93rem; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.task-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.task-time {
-  font-size: 0.75rem; color: var(--text-secondary);
-  display: flex; align-items: center; gap: 4px;
-}
-.task-time.over { color: var(--neon-red); }
-.task-time.under { color: var(--neon-green); }
-.task-actions { display: flex; gap: 6px; align-items: center; }
+/* ---- Task/Timeline Item ---- */
+.timeline-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);position:relative;transition:all .25s var(--transition)}
+.timeline-item:hover{background:rgba(255,255,255,.02);transform:translateX(4px)}
+.timeline-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid;box-shadow:0 0 10px currentColor;position:relative}
+.timeline-dot::after{content:'';position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:currentColor;transform:translate(-50%,-50%)}
+.task-priority-high .timeline-dot{color:var(--neon-red);border-color:var(--neon-red)}
+.task-priority-medium .timeline-dot{color:var(--neon-yellow);border-color:var(--neon-yellow)}
+.task-priority-low .timeline-dot{color:var(--neon-green);border-color:var(--neon-green)}
+.task-body{flex:1;min-width:0;}
+.task-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.task-name{font-weight:600;font-size:1.1rem;color:var(--text-primary);font-family:var(--font-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.task-cat{font-size:10px;letter-spacing:1px;padding:2px 10px;border-radius:20px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);text-transform:uppercase}
+.task-meta{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--text-secondary);flex-wrap:wrap;}
+.time-gain{color:var(--neon-green);font-weight:700}
+.task-time-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:12px;overflow:hidden;width:100%;}
+.task-time-fill{height:100%;border-radius:2px;transition:width .5s;box-shadow:0 0 8px currentColor;}
+.priority-pill{font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:20px;font-weight:700;text-transform:uppercase}
+.priority-high{background:rgba(255,0,110,.15);color:var(--neon-red);border:1px solid rgba(255,0,110,.3)}
+.priority-medium{background:rgba(255,107,53,.15);color:var(--neon-yellow);border:1px solid rgba(255,107,53,.3)}
+.priority-low{background:rgba(0,255,136,.15);color:var(--neon-green);border:1px solid rgba(0,255,136,.3)}
+.tag-recurring{font-size:10px;padding:2px 8px;background:rgba(191,0,255,.15);border:1px solid rgba(191,0,255,.3);color:var(--neon-purple);border-radius:20px}
+.task-completed .task-name{text-decoration:line-through;opacity:.5}
+.task-completed .timeline-dot{opacity:.4}
+.task-actions { display: flex; gap: 8px; align-items: center; margin-left:auto;}
 
 /* ---- Timer Display ---- */
 .timer-display {

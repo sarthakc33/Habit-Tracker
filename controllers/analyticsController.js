@@ -15,11 +15,15 @@ exports.getSummary = (req, res) => {
   const data = readData();
   const userId = req.user.userId;
   const allTasks = data.tasks.filter(t => t.userId === userId && !t.isTemplate);
-  const completed = allTasks.filter(t => t.status === 'completed');
-  const pending = allTasks.filter(t => t.status !== 'completed');
+  
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayTasks = allTasks.filter(t => (t.date || t.createdAt.split('T')[0]) === todayStr);
+  
+  const completed = todayTasks.filter(t => t.status === 'completed' || t.completedAt?.startsWith(todayStr));
+  const pending = todayTasks.filter(t => t.status !== 'completed' && !t.completedAt?.startsWith(todayStr));
 
-  const totalPlanned = allTasks.reduce((s, t) => s + (t.estimatedTime || 0), 0);
-  const totalActual = allTasks.reduce((s, t) => s + (t.actualTime || 0), 0);
+  const totalPlanned = todayTasks.reduce((s, t) => s + (t.estimatedTime || 0), 0);
+  const totalActual = todayTasks.reduce((s, t) => s + (t.actualTime || 0), 0);
 
   // Reality Score
   let realityScore = 100;
@@ -32,24 +36,24 @@ exports.getSummary = (req, res) => {
     realityScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
   }
 
-  const productivityScore = allTasks.length
-    ? Math.round((completed.length / allTasks.length) * 100)
+  const productivityScore = todayTasks.length
+    ? Math.round((completed.length / todayTasks.length) * 100)
     : 0;
 
   // Time by priority
   const byPriority = { High: 0, Medium: 0, Low: 0 };
-  allTasks.forEach(t => {
+  todayTasks.forEach(t => {
     byPriority[t.priority] = (byPriority[t.priority] || 0) + (t.actualTime || 0);
   });
 
   // Time by category
   const byCategory = {};
-  allTasks.forEach(t => {
+  todayTasks.forEach(t => {
     byCategory[t.category] = (byCategory[t.category] || 0) + (t.actualTime || 0);
   });
 
   // Per-task comparison
-  const taskComparison = allTasks.map(t => ({
+  const taskComparison = todayTasks.map(t => ({
     name: t.name.length > 18 ? t.name.slice(0, 18) + '…' : t.name,
     planned: parseFloat((t.estimatedTime || 0).toFixed(1)),
     actual: parseFloat((t.actualTime || 0).toFixed(1)),
@@ -57,9 +61,9 @@ exports.getSummary = (req, res) => {
     status: t.status
   }));
 
-  const insights = generateInsights(allTasks, byPriority, realityScore);
+  const insights = generateInsights(todayTasks, byPriority, realityScore);
 
-  const leaks = allTasks
+  const leaks = todayTasks
     .filter(t => t.actualTime > t.estimatedTime * 1.5 && t.actualTime > 0)
     .map(t => ({
       name: t.name,
@@ -89,11 +93,25 @@ exports.getSummary = (req, res) => {
 
 function generateInsights(tasks, byPriority, realityScore) {
   const insights = [];
-  const completed = tasks.filter(t => t.status === 'completed');
+  const completed = tasks.filter(t => t.status === 'completed' || t.completedAt);
+  const pending = tasks.filter(t => t.status !== 'completed' && !t.completedAt);
 
   if (tasks.length === 0) {
     insights.push({ icon: '📋', text: 'Add your first task to get personalized insights!', type: 'info' });
     return insights;
+  }
+  
+  const prodScore = tasks.length ? Math.round((completed.length / tasks.length) * 100) : 0;
+  let effLabel = 'low';
+  if (prodScore >= 80) effLabel = 'excellent';
+  else if (prodScore >= 50) effLabel = 'average';
+  
+  const missedCount = tasks.length - completed.length;
+  insights.push({ icon: '📅', text: `Day Summary: ${completed.length} completed, ${missedCount} missed. Productivity: ${effLabel}. Efficiency: ${realityScore}%.`, type: 'info' });
+  
+  const pendingHigh = pending.filter(t => t.priority === 'High');
+  if (pendingHigh.length > 0) {
+    insights.push({ icon: '⚠️', text: `You missed ${pendingHigh.length} important high-priority task${pendingHigh.length > 1 ? 's' : ''} today.`, type: 'danger' });
   }
 
   if (realityScore >= 85) {
@@ -115,7 +133,6 @@ function generateInsights(tasks, byPriority, realityScore) {
     insights.push({ icon: '🕳️', text: 'You spend more time on Low priority tasks than High priority ones!', type: 'danger' });
   }
 
-  const prodScore = tasks.length ? Math.round((completed.length / tasks.length) * 100) : 0;
   if (prodScore === 100 && tasks.length > 2) {
     insights.push({ icon: '🏆', text: 'Perfect day! All tasks completed. Amazing productivity!', type: 'success' });
   } else if (prodScore < 30 && tasks.length > 2) {

@@ -6,6 +6,7 @@
   <title>Reality Check – Time Tracker</title>
   <meta name="description" content="Track actual time on tasks with an interactive timer. Focus mode included.">
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/calendar-heatmap.css">
   <style>
     .tracker-card {
       background: var(--bg-card); border: 1px solid var(--border);
@@ -87,6 +88,17 @@
       <button class="btn btn-ghost btn-sm filter-btn" data-filter="completed">Completed</button>
     </div>
 
+    <!-- Calendar Strip -->
+    <div id="calendarStripContainer" style="margin-bottom: 20px;"></div>
+    
+    <!-- Date Section Header -->
+    <div class="date-section-header" id="dateSectionHeader" style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="date-section-header__label" id="dateSectionLabel" style="font-size: 1.2rem; font-weight: 700;">Today</span>
+        <span class="date-section-header__badge date-section-header__badge--today" id="dateSectionBadge" style="padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; background: rgba(99,102,241,0.15); color: #6366f1;">Today</span>
+      </div>
+    </div>
+
     <!-- Task Cards Grid -->
     <div class="tracker-grid" id="tracker-grid">
       <div class="empty-state" style="grid-column:1/-1;padding:60px;">
@@ -139,6 +151,7 @@
 </div>
 <script src="/js/api.js"></script>
 <script src="/js/notifications.js"></script>
+<script src="/js/calendarStrip.js"></script>
 <script src="/js/tracker.js"></script>
 </body>
 </html>

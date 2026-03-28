@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reality Check — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#040610;--bg2:#070d1a;--glass:rgba(255,255,255,0.03);--glass-border:rgba(255,255,255,0.07);--glass-hover:rgba(255,255,255,0.055);--c-cyan:#00e5ff;--c-violet:#a855f7;--c-green:#22d3a0;--c-amber:#f59e0b;--c-rose:#f43f5e;--c-blue:#3b82f6;--text:#f0f4ff;--text-2:#8ba3c7;--text-3:#3d546e;--font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;--r:16px;--r-lg:24px;--ease:cubic-bezier(0.16,1,0.3,1);--ease-back:cubic-bezier(0.34,1.56,0.64,1)}
+:root{--c-cyan:#00f5ff;--c-violet:#bf00ff;--c-green:#00ff88;--c-amber:#ff6b35;--c-rose:#ff006e;--c-blue:#00f5ff;--bg:#050810;--bg2:#080d1a;--glass:rgba(255,255,255,0.04);--glass-border:rgba(255,255,255,0.08);--glass-hover:rgba(255,255,255,0.06);--text:#e8eaf6;--text-2:rgba(232,234,246,0.5);--text-3:rgba(232,234,246,0.3);--font-display:'Orbitron',monospace;--font:'Rajdhani',sans-serif;--mono:'JetBrains Mono',monospace;--r:16px;--r-lg:20px;--ease:cubic-bezier(0.16,1,0.3,1);--ease-back:cubic-bezier(0.34,1.56,0.64,1)}
+h1,h2,h3,h4,h5,h6, .card-title, .stat-val, .hero-title, .ring-num, .splash-text {font-family:var(--font-display); letter-spacing: 1px;}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;min-height:100vh;cursor:default}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;overflow-x:hidden;min-height:100vh;cursor:default}
 
 /* CURSOR GLOW */
 .cursor-glow{position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,rgba(168,85,247,0.03) 40%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:1;will-change:transform;transition:none}
@@ -54,9 +55,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:h
 .pulse-val{animation:valPulse .6s var(--ease-back)}
 @keyframes valPulse{0%{transform:scale(.8);opacity:.5}100%{transform:scale(1);opacity:1}}
 
-/* ENHANCED CARD HOVER GLOW */
-.stat-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 40px var(--sc-color-glow,rgba(0,229,255,.08))}
-.card:hover{border-color:rgba(255,255,255,.12);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.3),0 0 30px rgba(0,229,255,.04)}
+/* ENHANCED CARD HOVER GLOW & IDLE FLOAT */
+.stat-card{animation:idleFloat 6s ease-in-out infinite}
+.card{animation:idleFloat 8s ease-in-out infinite}
+.stat-card:nth-child(even){animation-delay: -3s}
+.card:nth-child(even){animation-delay: -2s}
+.stat-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 40px var(--sc-color-glow,rgba(0,229,255,.08));animation-play-state: paused}
+.card:hover{border-color:rgba(255,255,255,.15);transform:translateY(-6px);box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 40px rgba(0,229,255,.06);animation-play-state: paused}
+@keyframes idleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* SPARKLINE */
+.stat-bg-spark{position:absolute;bottom:0;left:0;right:0;height:45%;opacity:.2;pointer-events:none;z-index:0;transition:opacity .3s var(--ease)}
+.stat-card:hover .stat-bg-spark{opacity:.4}
+.stat-bg-spark canvas{width:100%;height:100%}
+.stat-card > *:not(.stat-bg-spark):not(.card-glow){position:relative;z-index:1}
 
 /* SPLASH */
 #splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .7s,transform .7s var(--ease)}
@@ -65,7 +77,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:h
 .splash-logo::before{content:'';position:absolute;inset:-4px;border-radius:24px;background:conic-gradient(from 0deg,var(--c-cyan),var(--c-violet),var(--c-green),var(--c-cyan));animation:spinBorder 3s linear infinite;opacity:.4;z-index:-1}
 @keyframes spinBorder{to{transform:rotate(360deg)}}
 @keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.splash-text{font-size:1.5rem;font-weight:800;background:linear-gradient(90deg,var(--c-cyan),var(--text),var(--c-violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em}
+.splash-text{font-size:1.5rem;font-weight:800;background:linear-gradient(90deg,var(--c-cyan),var(--text),var(--c-violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em}
 .splash-sub{font-size:.7rem;color:var(--text-3);font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-top:-12px}
 .splash-bar{width:200px;height:3px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden}
 .splash-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--c-cyan),var(--c-violet));width:0%;animation:splashLoad 1.5s var(--ease) forwards;box-shadow:0 0 10px var(--c-cyan)}
@@ -82,7 +94,7 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .logo-gem{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--c-cyan),var(--c-violet));display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(0,229,255,.35);animation:gemGlow 4s ease-in-out infinite;position:relative;overflow:hidden}
 .logo-gem::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.3) 0%,transparent 50%)}
 @keyframes gemGlow{0%,100%{box-shadow:0 0 20px rgba(0,229,255,.35)}50%{box-shadow:0 0 40px rgba(0,229,255,.6),0 0 60px rgba(168,85,247,.3)}}
-.logo-name{font-size:1.05rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(90deg,var(--c-cyan) 0%,var(--text) 70%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-name{font-size:1.05rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(90deg,var(--c-cyan) 0%,var(--text) 70%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .logo-sub{font-size:.6rem;color:var(--text-3);font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .nav-links{display:flex;gap:2px;list-style:none;background:rgba(255,255,255,.025);padding:4px;border-radius:14px;border:1px solid var(--glass-border)}
 .nav-links a{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:var(--text-2);text-decoration:none;font-size:.83rem;font-weight:600;transition:all .2s}
@@ -133,22 +145,39 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--c-cyan);box-shadow:0 0 10px var(--c-cyan);animation:tagBlink 2s ease-in-out infinite}
 @keyframes tagBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 .hero-title{font-size:clamp(2.4rem,4.5vw,3.8rem);font-weight:900;line-height:1;letter-spacing:-.04em;margin-bottom:10px}
-.hero-title .grad{background:linear-gradient(90deg,var(--c-cyan),var(--c-violet) 60%,var(--c-green));background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradShift 5s ease-in-out infinite}
+.hero-title .grad{background:linear-gradient(90deg,var(--c-cyan),var(--c-violet) 60%,var(--c-green));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:gradShift 5s ease-in-out infinite}
 @keyframes gradShift{0%,100%{background-position:0% 0%}50%{background-position:100% 0%}}
 .hero-date{font-family:var(--mono);font-size:.76rem;color:var(--text-3);letter-spacing:.05em;margin-top:8px}
 .hero-right{display:flex;gap:12px;opacity:0;transform:translateY(28px);animation:riseIn .9s 1.8s var(--ease) forwards}
 @keyframes riseIn{to{opacity:1;transform:translateY(0)}}
 
-/* TYPING CURSOR */
+/* TYPING CURSOR & SHIMMER */
 .typing-cursor{display:inline-block;width:3px;height:1em;background:var(--c-cyan);margin-left:4px;animation:blink 1s step-end infinite;vertical-align:text-bottom}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.shimmer-text{background:linear-gradient(90deg,var(--text-2),#fff,var(--text-2));background-size:200% auto;color:transparent;-webkit-background-clip:text;background-clip:text;animation:shimmerText 3s linear infinite}
+@keyframes shimmerText{to{background-position:200% center}}
+.name-glow{text-shadow:0 0 12px rgba(0,229,255,.5);animation:pulseGlow 4s ease-in-out infinite;color:var(--text)}
+@keyframes pulseGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+
+/* CLOCK & FEEDBACK */
+.hero-center{display:flex;flex-direction:column;align-items:center;gap:16px;opacity:0;transform:translateY(28px);animation:riseIn .9s 1.7s var(--ease) forwards;margin:0 24px}
+.analog-clock{width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.08);position:relative;box-shadow:inset 0 0 20px rgba(0,229,255,.05),0 0 30px rgba(0,0,0,.5);animation:breathGlow 4s ease-in-out infinite;backdrop-filter:blur(8px)}
+@keyframes breathGlow{0%,100%{box-shadow:inset 0 0 20px rgba(0,229,255,.05),0 0 30px rgba(0,229,255,.1)}50%{box-shadow:inset 0 0 35px rgba(0,229,255,.15),0 0 50px rgba(0,229,255,.25)}}
+.clock-face{position:absolute;inset:6px;border-radius:50%;background:rgba(0,0,0,.4);box-shadow:inset 0 0 10px rgba(0,0,0,.8)}
+.clock-hand{position:absolute;bottom:50%;left:50%;transform-origin:bottom;border-radius:99px;background:var(--c-cyan);will-change:transform}
+.clock-hour{width:4px;height:24%;margin-left:-2px;background:var(--text);border-radius:4px}
+.clock-minute{width:2px;height:34%;margin-left:-1px;background:var(--text-2)}
+.clock-second{width:1px;height:42%;margin-left:-0.5px;background:var(--c-rose)}
+.clock-center{position:absolute;top:50%;left:50%;width:8px;height:8px;transform:translate(-50%,-50%);border-radius:50%;background:var(--c-cyan);box-shadow:0 0 8px var(--c-cyan);border:2px solid #000}
+.clock-ring{position:absolute;inset:-1px;border-radius:50%;border:2px solid transparent;border-top-color:var(--c-violet);animation:spinBorder 8s linear infinite}
+.live-feedback{font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--c-cyan);background:rgba(0,229,255,.05);padding:6px 14px;border-radius:99px;border:1px solid rgba(0,229,255,.15);text-align:center;transition:opacity .5s var(--ease),transform .5s var(--ease);box-shadow:0 0 10px rgba(0,229,255,.1);text-transform:uppercase;letter-spacing:.05em}
 
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-family:var(--font);font-size:.85rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:all .2s var(--ease);position:relative;overflow:hidden;letter-spacing:.01em}
-.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%);opacity:0;transition:opacity .2s}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-family:var(--font);font-size:.85rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:all .3s var(--ease);position:relative;overflow:hidden;letter-spacing:.01em;z-index:1}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%);opacity:0;transition:opacity .2s;z-index:-1}
 .btn:hover::after{opacity:1}
-.btn:hover{transform:translateY(-2px)}
-.btn:active{transform:translateY(0)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,229,255,.3)}
+.btn:active{transform:translateY(1px) scale(0.96)}
 .btn-primary{background:linear-gradient(135deg,var(--c-cyan),#007cf0);color:#000;box-shadow:0 4px 24px rgba(0,229,255,.3)}
 .btn-primary:hover{box-shadow:0 8px 40px rgba(0,229,255,.5)}
 .btn-ghost{background:var(--glass);border:1px solid var(--glass-border);color:var(--text)}
@@ -187,7 +216,8 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
 .rings-row{display:flex;gap:18px}
 .ring-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
 .ring-svg-wrap{position:relative;width:130px;height:130px}
-.ring-svg-wrap svg{transform:rotate(-90deg)}
+.ring-svg-wrap svg{transform:rotate(-90deg);animation:breathSpin 12s ease-in-out infinite}
+@keyframes breathSpin{0%,100%{transform:rotate(-90deg) scale(1)}50%{transform:rotate(-60deg) scale(1.08)}}
 .ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring-num{font-size:1.65rem;font-weight:900;letter-spacing:-.04em;line-height:1}
 .ring-sub{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-top:2px}
@@ -208,21 +238,29 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
 /* CHART */
 .chart-wrap{height:210px;position:relative}
 
-/* TASK LIST */
-.task-row{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid var(--glass-border);margin-bottom:9px;transition:all .25s var(--ease);position:relative;overflow:hidden;cursor:default}
-.task-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,var(--c-cyan));box-shadow:0 0 10px var(--tc,var(--c-cyan));border-radius:3px 0 0 3px}
-.task-row:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09);transform:translateX(4px)}
-.task-name{flex:1;font-size:.875rem;font-weight:600}
-.task-chips{display:flex;gap:5px}
-.chip{padding:2px 8px;border-radius:7px;font-size:.62rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
-.chip-high{background:rgba(244,63,94,.12);color:var(--c-rose)}
-.chip-medium{background:rgba(245,158,11,.1);color:var(--c-amber)}
-.chip-low{background:rgba(34,211,160,.1);color:var(--c-green)}
-.chip-progress{background:rgba(0,229,255,.1);color:var(--c-cyan)}
-.chip-pending{background:rgba(255,255,255,.05);color:var(--text-2)}
-.chip-done{background:rgba(34,211,160,.1);color:var(--c-green)}
-.chip-recurring{background:rgba(168,85,247,.1);color:var(--c-violet)}
-.task-time-lbl{font-family:var(--mono);font-size:.65rem;color:var(--text-3);white-space:nowrap}
+/* TIMELINE TASKS */
+.timeline-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--glass-border);position:relative;transition:all .25s var(--ease)}
+.timeline-item:hover{background:rgba(255,255,255,.02);transform:translateX(4px)}
+.timeline-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid;box-shadow:0 0 10px currentColor;position:relative}
+.timeline-dot::after{content:'';position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:currentColor;transform:translate(-50%,-50%)}
+.task-priority-high .timeline-dot{color:var(--c-rose);border-color:var(--c-rose)}
+.task-priority-medium .timeline-dot{color:var(--c-amber);border-color:var(--c-amber)}
+.task-priority-low .timeline-dot{color:var(--c-green);border-color:var(--c-green)}
+.task-body{flex:1}
+.task-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.task-name{font-weight:600;font-size:16px;color:var(--text);font-family:var(--font)}
+.task-cat{font-size:10px;letter-spacing:1px;padding:2px 10px;border-radius:20px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text-2);text-transform:uppercase}
+.task-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--text-2)}
+.time-gain{color:var(--c-green);font-weight:700}
+.task-time-bar{height:3px;background:var(--glass);border-radius:2px;margin-top:10px;overflow:hidden}
+.task-time-fill{height:100%;border-radius:2px;transition:width .5s}
+.priority-pill{font-size:9px;letter-spacing:1px;padding:2px 8px;border-radius:20px;font-weight:700;text-transform:uppercase}
+.priority-high{background:rgba(255,0,110,.15);color:var(--c-rose);border:1px solid rgba(255,0,110,.3)}
+.priority-medium{background:rgba(255,107,53,.15);color:var(--c-amber);border:1px solid rgba(255,107,53,.3)}
+.priority-low{background:rgba(0,255,136,.15);color:var(--c-green);border:1px solid rgba(0,255,136,.3)}
+.tag-recurring{font-size:9px;padding:1px 7px;background:rgba(191,0,255,.2);border:1px solid rgba(191,0,255,.4);color:var(--c-violet);border-radius:20px}
+.task-completed .task-name{text-decoration:line-through;opacity:.5}
+.task-completed .timeline-dot{opacity:.4}
 
 /* INSIGHTS & BADGES & LEAKS (same as before) */
 .insight-row{display:flex;align-items:flex-start;gap:12px;padding:13px;border-radius:12px;margin-bottom:9px;border:1px solid;transition:transform .2s}
@@ -394,9 +432,23 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
   <header class="hero">
     <div class="hero-left">
       <div class="hero-tag"><span class="hero-tag-dot"></span>System Active — All Systems Go</div>
-      <h1 class="hero-title">Good <span class="grad" id="greeting-time">Evening</span>,<br><span id="greeting-name">Achiever</span> <span class="wave">👋</span><span class="typing-cursor"></span></h1>
+      <h1 class="hero-title"><span id="greeting-time">Good Evening</span>,<br><span id="greeting-name" class="name-glow">Achiever</span> <span id="greeting-emoji" class="wave">👋</span><span class="typing-cursor"></span></h1>
       <div class="hero-date" id="today-date">Loading…</div>
     </div>
+    
+    <div class="hero-center">
+      <div class="analog-clock" id="analogClock">
+        <div class="clock-face">
+          <div class="clock-hand clock-hour" id="clockHour"></div>
+          <div class="clock-hand clock-minute" id="clockMinute"></div>
+          <div class="clock-hand clock-second" id="clockSecond"></div>
+          <div class="clock-center"></div>
+        </div>
+        <div class="clock-ring" id="clockRing"></div>
+      </div>
+      <div class="live-feedback" id="liveFeedback">Analyzing...</div>
+    </div>
+
     <div class="hero-right">
       <a href="/planner" class="btn btn-ghost">＋ Add Task</a>
       <a href="/tracker" class="btn btn-primary">▶ Start Tracking</a>
@@ -404,10 +456,10 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
   </header>
 
   <div class="stats-grid">
-    <div class="stat-card magnetic reveal reveal-delay-1" style="--sc-color:var(--c-cyan);--sc-color-glow:rgba(0,229,255,.1)"><div class="stat-icon-wrap" style="background:rgba(0,229,255,.1)">🎯</div><div class="stat-val" id="val-planned"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Planned Time</div><div class="stat-delta neutral" id="trend-actual"><div class="skeleton skeleton-text"></div></div></div>
-    <div class="stat-card magnetic reveal reveal-delay-2" style="--sc-color:var(--c-violet);--sc-color-glow:rgba(168,85,247,.1)"><div class="stat-icon-wrap" style="background:rgba(168,85,247,.1)">⏱</div><div class="stat-val" id="val-actual"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Actual Time</div><div class="stat-delta neutral" id="trend-tasks"><div class="skeleton skeleton-text"></div></div></div>
-    <div class="stat-card magnetic reveal reveal-delay-3" style="--sc-color:var(--c-green);--sc-color-glow:rgba(34,211,160,.1)"><div class="stat-icon-wrap" style="background:rgba(34,211,160,.1)">✅</div><div class="stat-val" id="val-completed"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Completed</div><div class="stat-delta neutral">Tasks done today</div></div>
-    <div class="stat-card magnetic reveal reveal-delay-4" style="--sc-color:var(--c-amber);--sc-color-glow:rgba(245,158,11,.1)"><div class="stat-icon-wrap" style="background:rgba(245,158,11,.1)">🏆</div><div class="stat-val" id="val-reality"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Reality Score</div><div class="stat-delta neutral">Planning accuracy</div></div>
+    <div class="stat-card magnetic reveal reveal-delay-1" style="--sc-color:var(--c-cyan);--sc-color-glow:rgba(0,229,255,.15)"><div class="card-glow"></div><div class="stat-bg-spark"><canvas id="spark1"></canvas></div><div class="stat-icon-wrap" style="background:rgba(0,229,255,.15)">🎯</div><div class="stat-val count-up" id="val-planned"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Planned Time</div><div class="stat-delta neutral" id="trend-actual"><div class="skeleton skeleton-text"></div></div></div>
+    <div class="stat-card magnetic reveal reveal-delay-2" style="--sc-color:var(--c-violet);--sc-color-glow:rgba(168,85,247,.15)"><div class="card-glow"></div><div class="stat-bg-spark"><canvas id="spark2"></canvas></div><div class="stat-icon-wrap" style="background:rgba(168,85,247,.15)">⏱</div><div class="stat-val count-up" id="val-actual"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Actual Time</div><div class="stat-delta neutral" id="trend-tasks"><div class="skeleton skeleton-text"></div></div></div>
+    <div class="stat-card magnetic reveal reveal-delay-3" style="--sc-color:var(--c-green);--sc-color-glow:rgba(34,211,160,.15)"><div class="card-glow"></div><div class="stat-bg-spark"><canvas id="spark3"></canvas></div><div class="stat-icon-wrap" style="background:rgba(34,211,160,.15)">✅</div><div class="stat-val count-up" id="val-completed"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Completed</div><div class="stat-delta neutral">Tasks done today</div></div>
+    <div class="stat-card magnetic reveal reveal-delay-4" style="--sc-color:var(--c-amber);--sc-color-glow:rgba(245,158,11,.15)"><div class="card-glow"></div><div class="stat-bg-spark"><canvas id="spark4"></canvas></div><div class="stat-icon-wrap" style="background:rgba(245,158,11,.15)">🏆</div><div class="stat-val count-up" id="val-reality"><div class="skeleton skeleton-val"></div></div><div class="stat-lbl">Reality Score</div><div class="stat-delta neutral">Planning accuracy</div></div>
   </div>
 
   <div class="main-grid">
@@ -416,8 +468,8 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
         <div class="card-head"><div class="card-title"><span class="title-blinker"></span>Performance Matrix</div></div>
         <div class="perf-body">
           <div class="rings-row">
-            <div class="ring-wrap"><div class="ring-svg-wrap"><svg width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="9"/><circle id="ring-prod-circle" cx="65" cy="65" r="54" fill="none" stroke="url(#g-prod)" stroke-width="9" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" style="transition:stroke-dashoffset 1.5s cubic-bezier(.16,1,.3,1)"/><defs><linearGradient id="g-prod" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#22d3a0"/><stop offset="100%" stop-color="#00e5ff"/></linearGradient></defs></svg><div class="ring-val"><span class="ring-num" id="ring-prod-val" style="background:linear-gradient(90deg,#22d3a0,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">0%</span><span class="ring-sub">PROD</span></div></div><div class="ring-label">Productivity</div></div>
-            <div class="ring-wrap"><div class="ring-svg-wrap"><svg width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="9"/><circle id="ring-reality-circle" cx="65" cy="65" r="54" fill="none" stroke="url(#g-real)" stroke-width="9" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" style="transition:stroke-dashoffset 1.5s cubic-bezier(.16,1,.3,1) .2s"/><defs><linearGradient id="g-real" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#00e5ff"/></linearGradient></defs></svg><div class="ring-val"><span class="ring-num" id="ring-reality-val" style="background:linear-gradient(90deg,#a855f7,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">0%</span><span class="ring-sub">REAL</span></div></div><div class="ring-label">Reality Score</div></div>
+            <div class="ring-wrap"><div class="ring-svg-wrap"><svg width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="9"/><circle id="ring-prod-circle" cx="65" cy="65" r="54" fill="none" stroke="url(#g-prod)" stroke-width="9" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" style="transition:stroke-dashoffset 1.5s cubic-bezier(.16,1,.3,1)"/><defs><linearGradient id="g-prod" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#22d3a0"/><stop offset="100%" stop-color="#00e5ff"/></linearGradient></defs></svg><div class="ring-val"><span class="ring-num" id="ring-prod-val" style="background:linear-gradient(90deg,#22d3a0,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">0%</span><span class="ring-sub">PROD</span></div></div><div class="ring-label">Productivity</div></div>
+            <div class="ring-wrap"><div class="ring-svg-wrap"><svg width="130" height="130" viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="9"/><circle id="ring-reality-circle" cx="65" cy="65" r="54" fill="none" stroke="url(#g-real)" stroke-width="9" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" style="transition:stroke-dashoffset 1.5s cubic-bezier(.16,1,.3,1) .2s"/><defs><linearGradient id="g-real" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#00e5ff"/></linearGradient></defs></svg><div class="ring-val"><span class="ring-num" id="ring-reality-val" style="background:linear-gradient(90deg,#a855f7,#00e5ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">0%</span><span class="ring-sub">REAL</span></div></div><div class="ring-label">Reality Score</div></div>
           </div>
           <div class="perf-right">
             <div class="level-badges"><div class="lbadge lb-lv">👾 <span id="dash-level">Lv.1</span></div><div class="lbadge lb-xp">⚡ <span id="dash-xp">0 XP</span></div><div class="lbadge lb-str">🔥 <span id="dash-streak">0</span> streak</div></div>
@@ -433,6 +485,18 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
       <div class="card card-glow d3 reveal">
         <div class="card-head"><div class="card-title"><span class="title-blinker" style="background:var(--c-rose);box-shadow:0 0 8px var(--c-rose)"></span>⚡ Time Leak Detector</div></div>
         <div id="leak-list"></div>
+      </div>
+      <div class="card card-glow d4 reveal">
+        <div class="card-head"><div class="card-title"><span class="title-blinker" style="background:var(--c-blue);box-shadow:0 0 8px var(--c-blue)"></span>Daily Focus Timeline</div></div>
+        <div id="focus-timeline" style="margin-top:10px;height:40px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);display:flex;padding:4px;gap:2px;position:relative;overflow:hidden">
+          <div style="flex:2;background:var(--c-cyan);opacity:0.8;border-radius:16px;box-shadow:0 0 10px var(--c-cyan)"></div>
+          <div style="flex:1;background:var(--c-violet);opacity:0.8;border-radius:16px;box-shadow:0 0 10px var(--c-violet)"></div>
+          <div style="flex:3;background:rgba(255,255,255,.1);border-radius:16px"></div>
+          <div style="flex:1;background:var(--c-green);opacity:0.8;border-radius:16px;box-shadow:0 0 10px var(--c-green)"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:.65rem;color:var(--text-3);margin-top:8px;padding:0 8px">
+          <span>8 AM</span><span>12 PM</span><span>4 PM</span><span>8 PM</span>
+        </div>
       </div>
     </div>
     <div class="col-r">
@@ -454,17 +518,24 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
 
 <script src="/js/api.js"></script>
 <script src="/js/notifications.js"></script>
+<script src="/js/ui_animations.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
 // Splash
 window.addEventListener('load',()=>{setTimeout(()=>{const s=document.getElementById('splash');if(s){s.classList.add('hide');setTimeout(()=>s.remove(),800)}},1600)});
 
-// Smooth Cursor Glow
+// Smooth Cursor Glow & Ambient Parallax
 const glow=document.getElementById('cursor-glow');
+const aurora=document.querySelector('.aurora');
 let gX=0,gY=0,cX=0,cY=0;
 document.addEventListener('mousemove',e=>{cX=e.clientX;cY=e.clientY});
-function animGlow(){gX+=(cX-gX)*0.06;gY+=(cY-gY)*0.06;glow.style.transform=`translate(${gX}px,${gY}px) translate(-50%,-50%)`;requestAnimationFrame(animGlow)}
+function animGlow(){
+  gX+=(cX-gX)*0.06;gY+=(cY-gY)*0.06;
+  if(glow) glow.style.transform=`translate(${gX}px,${gY}px) translate(-50%,-50%)`;
+  if(aurora) aurora.style.transform=`translate(${(gX - window.innerWidth/2)*-0.015}px, ${(gY - window.innerHeight/2)*-0.015}px)`;
+  requestAnimationFrame(animGlow)
+}
 animGlow();
 
 // Particles - enhanced variety
@@ -484,19 +555,58 @@ document.querySelectorAll('.magnetic').forEach(card=>{
   card.addEventListener('mouseleave',()=>{card.style.transform=''})
 });
 
-// Greeting + user
+// Greeting + user dynamically time-bound
 function setGreeting(){
   const h=new Date().getHours();
   const el=document.getElementById('greeting-time');
+  const emojiEl=document.getElementById('greeting-emoji');
   const dateEl=document.getElementById('today-date');
   const nameEl=document.getElementById('greeting-name');
-  if(el)el.textContent=h<12?'Morning':h<17?'Afternoon':'Evening';
+  
+  let msg='Good Night', emoji='🌙';
+  if(h>=0 && h<12){ msg='Good Morning'; emoji='🌅'; }
+  else if(h>=12 && h<16){ msg='Good Afternoon'; emoji='☀️'; }
+  else if(h>=16 && h<19){ msg='Good Evening'; emoji='🌇'; }
+  
+  if(el)el.innerHTML=`<span class="grad">${msg}</span>`;
+  if(emojiEl)emojiEl.innerHTML=`<span class="shimmer-text wave">${emoji}</span>`;
   if(dateEl)dateEl.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  
   const user=getUser();
   if(user&&nameEl)nameEl.textContent=user.username;
   const avatarEl=document.getElementById('user-avatar');
   if(user&&avatarEl)avatarEl.textContent=user.username.charAt(0).toUpperCase();
 }
+
+// Analog Clock & Feedback Loop
+function updateClock(){
+  const d=new Date();
+  const h=d.getHours(), m=d.getMinutes(), s=d.getSeconds(), ms=d.getMilliseconds();
+  const hDeg=(h%12)*30 + m*.5;
+  const mDeg=m*6 + s*.1;
+  const sDeg=s*6 + ms*.006;
+  const cHour=document.getElementById('clockHour'), cMin=document.getElementById('clockMinute'), cSec=document.getElementById('clockSecond');
+  if(cHour) cHour.style.transform=`rotate(${hDeg}deg)`;
+  if(cMin) cMin.style.transform=`rotate(${mDeg}deg)`;
+  if(cSec) cSec.style.transform=`rotate(${sDeg}deg)`;
+  requestAnimationFrame(updateClock);
+}
+requestAnimationFrame(updateClock);
+
+const liveFeeds = ["You're on track 🚀", "Focus mode recommended 🎯", "Keep going, momentum building ⚡", "Dashboard systems active ✨", "Optimal productivity 📈"];
+let feedIdx = 0;
+setInterval(()=>{
+  const feedEl = document.getElementById('liveFeedback');
+  if(!feedEl) return;
+  feedEl.style.opacity = '0';
+  feedEl.style.transform = 'translateY(5px)';
+  setTimeout(()=>{
+    feedEl.textContent = liveFeeds[feedIdx];
+    feedIdx = (feedIdx+1) % liveFeeds.length;
+    feedEl.style.opacity = '1';
+    feedEl.style.transform = 'translateY(0)';
+  }, 500);
+}, 5000);
 
 function formatMins(m){if(!m||m<=0)return'0m';const h=Math.floor(m/60),r=Math.round(m%60);return h>0?h+'h '+r+'m':r+'m'}
 function animNum(el,t,d){d=d||900;const s=parseFloat(el.textContent)||0,diff=t-s,steps=Math.max(1,Math.round(d/16));let st=0;const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;const iv=setInterval(()=>{st++;el.textContent=Math.round(s+diff*ease(st/steps));if(st>=steps){el.textContent=Math.round(t);clearInterval(iv)}},16)}
@@ -515,6 +625,15 @@ function renderStats(s,g){
   if(bar)setTimeout(()=>{bar.style.width=g.progress+'%'},800);
   if(lbl)lbl.textContent=g.xp+' / '+g.nextThreshold+' XP';
   setTimeout(()=>{setRing('ring-prod-circle',s.productivityScore);setRing('ring-reality-circle',s.realityScore);document.getElementById('ring-prod-val').textContent=s.productivityScore+'%';document.getElementById('ring-reality-val').textContent=s.realityScore+'%'},600);
+
+  if(window.UIAnimations) {
+    setTimeout(()=>{
+      UIAnimations.drawSparkline('spark1', 'var(--c-cyan)', [10, 15, 8, 20, 30, 25, Math.max(10, Math.min(100, s.totalPlanned))]);
+      UIAnimations.drawSparkline('spark2', 'var(--c-violet)', [5, 12, 18, 15, 22, 28, Math.max(10, Math.min(100, s.totalActual))]);
+      UIAnimations.drawSparkline('spark3', 'var(--c-green)', [0, 2, 3, 5, 8, Math.max(0, s.completedCount-1), s.completedCount]);
+      UIAnimations.drawSparkline('spark4', 'var(--c-amber)', [60, 65, 70, 75, Math.max(0, s.realityScore-5), s.realityScore]);
+    }, 400);
+  }
 }
 
 let barChart=null;
@@ -524,17 +643,42 @@ function renderBarChart(s){
   document.getElementById('no-bar-data').style.display=data.length===0?'block':'none';
   ctx.style.display=data.length===0?'none':'block';
   if(!data.length)return;if(barChart)barChart.destroy();
-  barChart=new Chart(ctx,{type:'bar',data:{labels:data.map(t=>t.name),datasets:[{label:'Planned (min)',data:data.map(t=>t.planned),backgroundColor:'rgba(168,85,247,.45)',borderColor:'#a855f7',borderWidth:2,borderRadius:8,borderSkipped:false},{label:'Actual (min)',data:data.map(t=>t.actual),backgroundColor:'rgba(0,229,255,.35)',borderColor:'#00e5ff',borderWidth:2,borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8ba3c7',font:{family:'JetBrains Mono',size:11}}},tooltip:{backgroundColor:'#070d1a',borderColor:'rgba(0,229,255,.2)',borderWidth:1}},scales:{x:{ticks:{color:'#3d546e',font:{size:11}},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{color:'#3d546e',font:{size:11}},grid:{color:'rgba(255,255,255,.03)'},beginAtZero:true}},animation:{duration:1200,easing:'easeInOutQuart'}}});
+  barChart=new Chart(ctx,{type:'bar',data:{labels:data.map(t=>t.name),datasets:[{label:'Planned (min)',data:data.map(t=>t.planned),backgroundColor:'rgba(0,245,255,.4)',borderColor:'var(--c-cyan)',borderWidth:1,borderRadius:6,borderSkipped:false},{label:'Actual (min)',data:data.map(t=>t.actual),backgroundColor:'rgba(191,0,255,.4)',borderColor:'var(--c-violet)',borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'var(--text-2)',font:{family:'JetBrains Mono',size:11}}},tooltip:{backgroundColor:'var(--bg2)',borderColor:'rgba(0,245,255,.2)',borderWidth:1}},scales:{x:{ticks:{color:'var(--text-2)',font:{size:11}},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'var(--text-2)',font:{size:11}},grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}},animation:{duration:1200,easing:'easeInOutQuart'}}});
 }
+
+function formatSecAsTime(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
 
 function renderTaskList(tasks){
   const el=document.getElementById('dash-task-list');if(!el)return;
   const today=new Date().toISOString().split('T')[0];
   const todays=tasks.filter(t=>(t.date||'').startsWith(today));
   if(!todays.length){el.innerHTML='<div class="empty"><div class="empty-ico">📋</div>No tasks for today.<br><a href="/planner" style="color:var(--c-cyan);text-decoration:none">Add tasks →</a></div>';return}
-  const cMap={High:'var(--c-rose)',Medium:'var(--c-amber)',Low:'var(--c-green)'};
-  const scMap={'in-progress':'chip-progress',pending:'chip-pending',completed:'chip-done'};
-  el.innerHTML=todays.slice(0,6).map((t,i)=>'<div class="task-row" style="--tc:'+(cMap[t.priority]||'var(--c-cyan)')+';animation:riseIn .5s '+(0.05*i)+'s both"><div class="task-name">'+(t.isRecurring?'🔁 ':'')+t.name+'</div><div class="task-chips"><span class="chip chip-'+t.priority.toLowerCase()+'">'+t.priority+'</span><span class="chip '+(scMap[t.status]||'chip-pending')+'">'+t.status+'</span>'+(t.isRecurring?'<span class="chip chip-recurring">Recurring</span>':'')+'</div><div class="task-time-lbl">🎯 '+formatMins(t.estimatedTime)+'</div></div>').join('');
+  
+  el.innerHTML=todays.slice(0,6).map((t,i)=>{
+    const actualMins=t.actualTime||0;
+    const estMins=t.estimatedTime||1;
+    const pct=estMins>0?Math.min(100,(actualMins/estMins)*100):0;
+    const planColor=pct>100?'var(--c-rose)':pct>75?'var(--c-amber)':'var(--c-cyan)';
+    
+    return `<div class="timeline-item task-priority-${(t.priority||'Medium').toLowerCase()} ${t.status==='completed'?'task-completed':''}" style="animation:riseIn .5s ${(0.05*i)}s both">
+      <div class="timeline-dot"></div>
+      <div class="task-body">
+        <div class="task-header">
+          <div class="task-name">${t.name}</div>
+          <span class="task-cat">${t.category||'Task'}</span>
+          <span class="priority-pill priority-${(t.priority||'Medium').toLowerCase()}">${t.priority||'Medium'}</span>
+          ${t.isRecurring?'<span class="tag-recurring">↻ RECURRING</span>':''}
+        </div>
+        <div class="task-meta">
+          <span>📅 ${today}</span>
+          <span>⏱ Est: ${formatMins(t.estimatedTime)}</span>
+          <span class="time-gain">Actual: <span style="font-family:var(--mono);color:var(--text);text-shadow:0 0 10px rgba(0,255,136,0.3)">${formatSecAsTime(actualMins*60)}</span></span>
+        </div>
+        <div class="task-time-bar"><div class="task-time-fill" style="width:${pct}%;background:${planColor};"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+  
   if(todays.length>6)el.innerHTML+='<a href="/planner" style="display:block;text-align:center;padding:10px;font-size:.72rem;color:var(--c-cyan);text-decoration:none;font-family:var(--mono)">+'+(todays.length-6)+' more →</a>';
 }
 

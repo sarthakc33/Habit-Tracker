@@ -2,7 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
+const fs = require('fs');
 const { Server } = require('socket.io');
+
+// Ensure data directory exists
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('./middleware/auth');
 
@@ -11,6 +18,7 @@ const analyticsRoutes = require('./routes/analytics');
 const gamificationRoutes = require('./routes/gamification');
 const authRoutes = require('./routes/auth');
 const notificationRoutes = require('./routes/notifications');
+const calendarRoutes = require('./routes/calendar');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +26,7 @@ const io = new Server(server, {
   cors: { origin: '*', methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'] }
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Store io on app for controller access
 app.set('io', io);
@@ -34,6 +42,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // Serve frontend pages
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));

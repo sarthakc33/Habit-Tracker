@@ -8,28 +8,76 @@ let timerInterval = null;
 let elapsedSeconds = 0;
 let currentFilter = 'all';
 
-async function loadTracker() {
+let currentSelectedDate = new Date().toISOString().split('T')[0];
+let calStrip;
+let currentData = { tasks: [], completedHistory: [] };
+
+async function loadTasksForDate(dateStr) {
+  const today = new Date().toISOString().split('T')[0];
+  const isPast = dateStr < today;
+  const isToday = dateStr === today;
+
+  const label = document.getElementById('dateSectionLabel');
+  const badge = document.getElementById('dateSectionBadge');
+  
+  if (isToday) {
+    label.textContent = 'Today — ' + new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    badge.textContent = 'Today';
+    badge.className = 'date-section-header__badge date-section-header__badge--today';
+  } else if (isPast) {
+    label.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    badge.textContent = 'Past';
+    badge.className = 'date-section-header__badge date-section-header__badge--past';
+  } else {
+    label.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    badge.textContent = 'Upcoming';
+    badge.className = 'date-section-header__badge date-section-header__badge--today';
+  }
+
   try {
-    allTasks = await API.getTasks();
+    const token = localStorage.getItem('rc_token');
+    if (!token) { window.location.href = '/login'; return; }
+    const res = await fetch(`/api/calendar/tasks?date=${dateStr}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    currentData = await res.json();
+    currentData.date = dateStr; // Store date on object for tracking check
+    allTasks = [...currentData.tasks, ...currentData.completedHistory]; // for manual entry selection
+    
     renderTrackerCards();
     populateManualSelect();
-  } catch {
+  } catch (e) {
     showToast('Failed to load tasks', 'error');
   }
 }
 
 function getFilteredTasks() {
-  return allTasks.filter(t => currentFilter === 'all' || t.status === currentFilter);
+  const merged = [...currentData.tasks, ...currentData.completedHistory];
+  // Filter out duplicates just in case (e.g. if a task is both active and completed, history takes precedence)
+  const uniqueIds = new Set();
+  const filtered = [];
+  merged.forEach(t => {
+    if (!uniqueIds.has(t.id)) {
+      uniqueIds.add(t.id);
+      const isDone = currentData.completedHistory.some(h => h.id === t.id) || t.completedOnDate || t.status === 'completed';
+      const statusToMatch = isDone ? 'completed' : t.status;
+      if (currentFilter === 'all' || statusToMatch === currentFilter) {
+        filtered.push({ ...t, effectiveStatus: statusToMatch, isDone });
+      }
+    }
+  });
+  return filtered;
 }
 
 function renderTrackerCards() {
   const grid = document.getElementById('tracker-grid');
   const tasks = getFilteredTasks();
+  const isToday = currentData.date === new Date().toISOString().split('T')[0];
 
   if (tasks.length === 0) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:60px;">
       <div class="empty-icon">⏱️</div>
-      <h3>No tasks to track</h3>
+      <h3>No tasks to track for this day</h3>
       <p>Add tasks in the <a href="/planner" style="color:var(--neon-purple);">Planner</a> first</p>
     </div>`;
     return;
@@ -44,19 +92,20 @@ function renderTrackerCards() {
                      diffMin < 0 ? `<span style="color:var(--neon-green);">${formatMins(Math.abs(diffMin))} left</span>` :
                      `<span style="color:var(--neon-cyan);">On track</span>`;
 
-    return `<div class="tracker-card ${isActive ? 'active-tracking' : t.status === 'completed' ? 'completed' : ''}" id="tcard-${t.id}">
+    return `<div class="tracker-card ${isActive ? 'active-tracking' : t.isDone ? 'completed' : ''}" id="tcard-${t.id}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.name}</div>
+          <div style="font-weight:700;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.isRecurring ? '🔁 ' : ''}${t.name}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
             <span class="badge badge-${t.priority.toLowerCase()}">${t.priority}</span>
-            <span class="badge badge-${t.status.replace('-','')}">
-              ${t.status === 'in-progress' ? '▶ ' : ''}${t.status}
+            <span class="badge badge-${t.effectiveStatus.replace('-','')}">
+              ${t.effectiveStatus === 'in-progress' ? '▶ ' : ''}${t.effectiveStatus}
             </span>
             <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">📁 ${t.category}</span>
+            ${t.overdueForDate ? '<span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">Overdue</span>' : ''}
           </div>
         </div>
-        ${t.status === 'completed'
+        ${t.isDone
           ? '<span style="font-size:1.5rem;">✅</span>'
           : `<button class="btn btn-ghost btn-sm btn-icon" onclick="openDeleteConfirm('${t.id}')" title="Delete">🗑️</button>`}
       </div>
@@ -79,14 +128,16 @@ function renderTrackerCards() {
       </div>
 
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
-        ${t.status === 'completed'
+        ${t.isDone
           ? `<div style="font-size:0.82rem;color:var(--neon-green);font-weight:600;flex:1;text-align:center;">✅ Completed</div>`
-          : isActive
-            ? `<button class="btn btn-danger btn-sm" style="flex:1;" onclick="stopTimer()">⏹ Stop</button>
-               <button class="btn btn-success btn-sm" onclick="completeTask('${t.id}')">✅ Done</button>`
-            : `<button class="btn btn-primary btn-sm" style="flex:1;" onclick="startTimer('${t.id}')">▶ Start Timer</button>
-               <button class="btn btn-ghost btn-sm btn-icon" onclick="openManualForTask('${t.id}')" title="Manual">✏️</button>
-               <button class="btn btn-success btn-sm btn-icon" onclick="completeTask('${t.id}')" title="Complete">✅</button>`
+          : !isToday
+            ? `<div style="font-size:0.82rem;color:var(--text-muted);font-weight:600;flex:1;text-align:center;">Viewing Past/Future</div>`
+            : isActive
+              ? `<button class="btn btn-danger btn-sm" style="flex:1;" onclick="stopTimer()">⏹ Stop</button>
+                 <button class="btn btn-success btn-sm" onclick="completeTask('${t.id}')">✅ Done</button>`
+              : `<button class="btn btn-primary btn-sm" style="flex:1;" onclick="startTimer('${t.id}')">▶ Start Timer</button>
+                 <button class="btn btn-ghost btn-sm btn-icon" onclick="openManualForTask('${t.id}')" title="Manual">✏️</button>
+                 <button class="btn btn-success btn-sm btn-icon" onclick="completeTask('${t.id}')" title="Complete">✅</button>`
         }
       </div>
     </div>`;
@@ -128,7 +179,7 @@ async function startTimer(taskId) {
       }
     }, 1000);
 
-    await loadTracker();
+    await loadTasksForDate(currentSelectedDate);
     showToast(`Timer started for "${task?.name}"`, 'info');
   } catch {
     showToast('Failed to start timer', 'error');
@@ -147,7 +198,7 @@ async function stopTimer() {
     document.getElementById('active-timer-card').style.display = 'none';
     document.getElementById('focus-btn').disabled = true;
     closeFocusMode();
-    await loadTracker();
+    await loadTasksForDate(currentSelectedDate);
     loadNavGamification();
   } catch {
     showToast('Failed to stop timer', 'error');
@@ -160,7 +211,7 @@ async function completeTask(taskId) {
     await API.completeTask(taskId);
     await API.awardXP('complete_task');
     showToast('🎉 Task completed! +50 XP', 'success');
-    await loadTracker();
+    await loadTasksForDate(currentSelectedDate);
     loadNavGamification();
   } catch {
     showToast('Failed to complete task', 'error');
@@ -215,7 +266,7 @@ async function submitManualTime() {
     await API.manualTime(taskId, mins);
     showToast(`Added ${formatMins(mins)} to task`, 'success');
     closeManualModal();
-    await loadTracker();
+    await loadTasksForDate(currentSelectedDate);
   } catch {
     showToast('Failed to add time', 'error');
   }
@@ -229,7 +280,8 @@ function populateManualSelect() {
     activeTasks.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
 }
 
-// ---- FILTER ----
+
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -243,5 +295,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('manual-modal')?.addEventListener('click', e => { if (e.target.id === 'manual-modal') closeManualModal(); });
   document.getElementById('focus-overlay')?.addEventListener('keydown', e => { if (e.key === 'Escape') closeFocusMode(); });
 
-  loadTracker();
+  calStrip = new CalendarStrip(
+    document.getElementById('calendarStripContainer'),
+    {
+      onDateSelect: (dateStr) => {
+        currentSelectedDate = dateStr;
+        loadTasksForDate(dateStr);
+      }
+    }
+  );
+  loadTasksForDate(currentSelectedDate);
 });
