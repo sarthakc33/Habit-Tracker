@@ -5,7 +5,7 @@ from flask import request, jsonify
 # Matching the existing local backend's hardcoded secret (if it was hardcoded)
 # Let's read from env or use a fallback
 import os
-JWT_SECRET = os.environ.get('JWT_SECRET', 'reality_check_secret_key_2024')
+JWT_SECRET = os.environ.get('JWT_SECRET', 'reality_check_secret_key_123')
 
 def require_auth(f):
     @wraps(f)

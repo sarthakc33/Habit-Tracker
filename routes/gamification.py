@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from firebase_config import get_db
 from middleware.auth import require_auth
-from routes.tasks import create_notification  # Re-use notification helper
+from routes.notifications import create_notification
 
 gamification_bp = Blueprint('gamification', __name__)
 
@@ -54,7 +54,8 @@ def get_status():
 @require_auth
 def award_xp():
     user_id = request.user['userId']
-    action = request.json.get('action')
+    body = request.get_json(silent=True) or {}
+    action = body.get('action')
     
     XP_MAP = {'complete_task': 50, 'start_timer': 5, 'perfect_estimate': 100, 'daily_checkin': 20}
     earned = XP_MAP.get(action, 10)
@@ -90,21 +91,21 @@ def award_xp():
     
     if streak >= 3 and '3-day-streak' not in badges:
         badges.append('3-day-streak')
-        create_notification(user_id, 'streak:milestone', '🔥 You earned the 3-Day Streak badge!')
+        create_notification(None, user_id, 'streak:milestone', '🔥 You earned the 3-Day Streak badge!')
     if streak >= 7 and 'week-warrior' not in badges:
         badges.append('week-warrior')
-        create_notification(user_id, 'streak:milestone', '⚔️ You earned the Week Warrior badge!')
+        create_notification(None, user_id, 'streak:milestone', '⚔️ You earned the Week Warrior badge!')
     if xp >= 500 and 'xp-500' not in badges:
         badges.append('xp-500')
-        create_notification(user_id, 'xp:awarded', '⚡ You earned the 500 XP Club badge!')
+        create_notification(None, user_id, 'xp:awarded', '⚡ You earned the 500 XP Club badge!')
     if level >= 5 and 'level-5' not in badges:
         badges.append('level-5')
-        create_notification(user_id, 'xp:awarded', '🚀 You reached Level 5 Pro!')
+        create_notification(None, user_id, 'xp:awarded', '🚀 You reached Level 5 Pro!')
         
     g['badges'] = badges
     
     if level > old_level:
-        create_notification(user_id, 'xp:awarded', f'🎉 Level Up! You are now Level {level}!')
+        create_notification(None, user_id, 'xp:awarded', f'🎉 Level Up! You are now Level {level}!')
         
     history = g.get('history', [])
     history.append({

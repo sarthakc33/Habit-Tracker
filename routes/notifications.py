@@ -1,12 +1,31 @@
 from flask import Blueprint, request, jsonify
 import sys
 import os
+import uuid
+from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from firebase_config import get_db
 from middleware.auth import require_auth
 
 notifications_bp = Blueprint('notifications', __name__)
+
+def create_notification(app, user_id, type_, message):
+    db = get_db()
+    if not db: return
+    try:
+        notif_id = str(uuid.uuid4())
+        doc = {
+            'id': notif_id,
+            'userId': user_id,
+            'type': type_,
+            'message': message,
+            'read': False,
+            'createdAt': datetime.utcnow().isoformat() + "Z"
+        }
+        db.collection('notifications').document(notif_id).set(doc)
+    except Exception as e:
+        print(f"Failed to create notification: {e}")
 
 @notifications_bp.route('/', methods=['GET'])
 @require_auth

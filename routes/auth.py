@@ -23,7 +23,7 @@ def generate_token(user):
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.json
+    data = request.get_json(silent=True) or {}
     username = data.get('username')
     password = data.get('password')
     
@@ -39,7 +39,7 @@ def register():
         return jsonify({'error': 'Database connection error (Firebase likely not initialized)'}), 500
         
     users_ref = db.collection('users')
-    existing = users_ref.where('username_lower', '==', username.lower()).limit(1).get()
+    existing = list(users_ref.where('username_lower', '==', username.lower()).limit(1).stream())
     if len(existing) > 0:
         return jsonify({'error': 'Username already taken'}), 409
         
@@ -71,7 +71,7 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
+    data = request.get_json(silent=True) or {}
     username = data.get('username')
     password = data.get('password')
     
@@ -83,7 +83,7 @@ def login():
         return jsonify({'error': 'Database connection error'}), 500
         
     users_ref = db.collection('users')
-    existing = users_ref.where('username_lower', '==', username.lower()).limit(1).get()
+    existing = list(users_ref.where('username_lower', '==', username.lower()).limit(1).stream())
     
     if len(existing) == 0:
         return jsonify({'error': 'Invalid credentials'}), 401
