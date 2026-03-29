@@ -132,10 +132,23 @@
     </div>
   </div>
 
+  <!-- DELETE CONFIRM MODAL -->
+  <div class="modal-overlay" id="delete-confirm-modal">
+    <div class="modal" style="max-width:380px;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:12px">🗑️</div>
+      <h2 class="modal-title" style="border:none;padding-bottom:0">Delete Task?</h2>
+      <p style="color:var(--text-secondary);font-size:.9rem;margin:12px 0 24px">This action cannot be undone.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-ghost" onclick="closeDeleteConfirm()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
 </div>
-<script src="/js/api.js?v=8"></script>
-<script src="/js/notifications.js?v=8"></script>
-<script src="/js/calendarStrip.js?v=8"></script>
-<script src="/js/tracker.js?v=8"></script>
+<script src="/js/api.js?v=9"></script>
+<script src="/js/notifications.js?v=9"></script>
+<script src="/js/calendarStrip.js?v=9"></script>
+<script src="/js/tracker.js?v=9"></script>
 </body>
 </html>

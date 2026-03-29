@@ -239,7 +239,8 @@ async function openFocusMode() {
   window.location.href = `/plant?taskId=${activeTaskId}&est=${estimatedMins}`;
 }
 function closeFocusMode() {
-  document.getElementById('focus-overlay').classList.remove('open');
+  const overlay = document.getElementById('focus-overlay');
+  if (overlay) overlay.classList.remove('open');
   document.documentElement.style.overflow = '';
 }
 
@@ -287,7 +288,32 @@ function populateManualSelect() {
     activeTasks.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
 }
 
+// ---- DELETE CONFIRM ----
+let deleteTargetId = null;
 
+function openDeleteConfirm(taskId) {
+  deleteTargetId = taskId;
+  const modal = document.getElementById('delete-confirm-modal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeDeleteConfirm() {
+  deleteTargetId = null;
+  const modal = document.getElementById('delete-confirm-modal');
+  if (modal) modal.classList.remove('open');
+}
+
+async function confirmDelete() {
+  if (!deleteTargetId) return;
+  try {
+    await API.deleteTask(deleteTargetId);
+    showToast('Task deleted', 'info');
+    closeDeleteConfirm();
+    await loadTasksForDate(currentSelectedDate);
+  } catch {
+    showToast('Failed to delete task', 'error');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -301,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('manual-modal')?.addEventListener('click', e => { if (e.target.id === 'manual-modal') closeManualModal(); });
   document.getElementById('focus-overlay')?.addEventListener('keydown', e => { if (e.key === 'Escape') closeFocusMode(); });
+  document.getElementById('delete-confirm-modal')?.addEventListener('click', e => { if (e.target.id === 'delete-confirm-modal') closeDeleteConfirm(); });
 
   calStrip = new CalendarStrip(
     document.getElementById('calendarStripContainer'),
@@ -313,3 +340,4 @@ document.addEventListener('DOMContentLoaded', () => {
   );
   loadTasksForDate(currentSelectedDate);
 });
+

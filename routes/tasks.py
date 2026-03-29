@@ -248,7 +248,7 @@ def manual_time(task_id):
     
     return jsonify(task_ref.get().to_dict()), 200
 
-@tasks_bp.route('/suggest-time', methods=['GET'])
+@tasks_bp.route('/suggest', methods=['GET'])
 @require_auth
 def suggest_time():
     user_id = request.user['userId']

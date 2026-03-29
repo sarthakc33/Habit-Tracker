@@ -198,12 +198,13 @@ class CalendarStrip {
     this._loadingMonths.add(cacheKey);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('rc_token'); // Fix: use correct token key
       const res = await fetch(`${BASE}/calendar/month-overview?year=${year}&month=${month}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!res.ok) return; // silently skip if auth fails, don't crash
       const data = await res.json();
-      data.days.forEach(d => {
+      (data.days || []).forEach(d => { // Fix: null guard to prevent TypeError crash
         this.monthOverviewCache[d.date] = d;
       });
       this.renderDays(); // re-render with dots
