@@ -19,6 +19,7 @@ const gamificationRoutes = require('./routes/gamification');
 const authRoutes = require('./routes/auth');
 const notificationRoutes = require('./routes/notifications');
 const calendarRoutes = require('./routes/calendar');
+const plantRoutes = require('./routes/plant');
 
 const app = express();
 const server = http.createServer(app);
@@ -43,6 +44,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/plant', plantRoutes);
 
 // Serve frontend pages
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
@@ -50,6 +52,7 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'log
 app.get('/planner', (req, res) => res.sendFile(path.join(__dirname, 'public', 'planner.html')));
 app.get('/tracker', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tracker.html')));
 app.get('/analytics', (req, res) => res.sendFile(path.join(__dirname, 'public', 'analytics.html')));
+app.get('/plant', (req, res) => res.sendFile(path.join(__dirname, 'public', 'plant.html')));
 
 // Socket.io Authentication
 io.use((socket, next) => {

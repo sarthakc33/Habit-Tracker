@@ -1,22 +1,22 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'reality-check-super-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'reality_check_secret_key_123';
 
-function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
+const authMiddleware = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
-  const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = { userId: decoded.userId, username: decoded.username };
+    req.user = decoded; // { userId, username }
     next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+  } catch (ex) {
+    res.status(401).json({ error: 'Invalid token.' });
   }
-}
+};
 
+// Export both the middleware AND the secret so authController can use it
+authMiddleware.JWT_SECRET = JWT_SECRET;
 module.exports = authMiddleware;
-module.exports.JWT_SECRET = JWT_SECRET;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reality Check – Time Tracker</title>
   <meta name="description" content="Track actual time on tasks with an interactive timer. Focus mode included.">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=10">
   <link rel="stylesheet" href="/css/calendar-heatmap.css">
   <style>
     .tracker-card {
@@ -39,6 +39,7 @@
       <li><a href="/planner">📋 <span>Planner</span></a></li>
       <li><a href="/tracker">⏱️ <span>Tracker</span></a></li>
       <li><a href="/analytics">📈 <span>Analytics</span></a></li>
+      <li><a href="/plant">🌱 <span>Plant</span></a></li>
     </ul>
     <div class="nav-gami" style="display:flex;align-items:center;gap:10px">
       <div class="level-badge">🎮 <span id="nav-level">Lv.1</span></div>
@@ -110,24 +111,7 @@
     <div style="height:40px;"></div>
   </div>
 
-  <!-- FOCUS MODE OVERLAY -->
-  <div class="focus-overlay" id="focus-overlay">
-    <button class="btn btn-ghost btn-sm" onclick="closeFocusMode()" style="position:absolute;top:24px;right:24px;">✕ Exit Focus</button>
-    <div style="max-width:500px;width:100%;">
-      <div style="font-size:0.8rem;font-weight:700;letter-spacing:0.15em;color:var(--neon-purple);margin-bottom:16px;">🎯 FOCUS MODE</div>
-      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;margin-bottom:10px;color:var(--text-secondary);" id="focus-task-name">—</div>
-      <div class="timer-display running" id="focus-timer-display">00:00:00</div>
-      <div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">Est: <span id="focus-est">—</span></div>
-      <div class="time-bar" style="margin-top:20px;height:8px;max-width:400px;">
-        <div class="time-bar-fill good" id="focus-timebar-fill" style="width:0%"></div>
-      </div>
-      <div style="margin-top:36px;display:flex;gap:14px;justify-content:center;">
-        <button class="btn btn-danger btn-lg" onclick="stopActiveTimerFocus()">⏹ Stop</button>
-        <button class="btn btn-success btn-lg" onclick="completeActiveTaskFocus()">✅ Done!</button>
-      </div>
-      <div style="margin-top:30px;opacity:0.25;font-size:2rem;animation:blobFloat 4s ease-in-out infinite;">⚡</div>
-    </div>
-  </div>
+
 
   <!-- MANUAL TIME MODAL -->
   <div class="modal-overlay" id="manual-modal">
@@ -149,9 +133,9 @@
   </div>
 
 </div>
-<script src="/js/api.js"></script>
-<script src="/js/notifications.js"></script>
-<script src="/js/calendarStrip.js"></script>
-<script src="/js/tracker.js"></script>
+<script src="/js/api.js?v=8"></script>
+<script src="/js/notifications.js?v=8"></script>
+<script src="/js/calendarStrip.js?v=8"></script>
+<script src="/js/tracker.js?v=8"></script>
 </body>
 </html>

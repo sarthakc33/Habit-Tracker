@@ -9,6 +9,7 @@ from routes.analytics import analytics_bp
 from routes.gamification import gamification_bp
 from routes.notifications import notifications_bp
 from routes.calendar import calendar_bp
+from routes.plant import plant_bp
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
@@ -21,6 +22,7 @@ app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
 app.register_blueprint(gamification_bp, url_prefix='/api/gamification')
 app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
 app.register_blueprint(calendar_bp, url_prefix='/api/calendar')
+app.register_blueprint(plant_bp, url_prefix='/api/plant')
 
 # Serve frontend pages
 @app.route('/')
@@ -42,6 +44,10 @@ def tracker_page():
 @app.route('/analytics')
 def analytics_page():
     return send_from_directory('public', 'analytics.html')
+
+@app.route('/plant')
+def plant_page():
+    return send_from_directory('public', 'plant.html')
 
 @app.route('/<path:path>')
 def serve_static(path):

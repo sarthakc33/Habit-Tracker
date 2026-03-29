@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reality Check – Analytics</title>
   <meta name="description" content="Charts and deep analysis of your productivity patterns over time.">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=10">
   <link rel="stylesheet" href="/css/calendar-heatmap.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -22,6 +22,7 @@
       <li><a href="/planner">📋 <span>Planner</span></a></li>
       <li><a href="/tracker">⏱️ <span>Tracker</span></a></li>
       <li><a href="/analytics">📈 <span>Analytics</span></a></li>
+      <li><a href="/plant">🌱 <span>Plant</span></a></li>
     </ul>
     <div class="nav-gami" style="display:flex;align-items:center;gap:10px">
       <div class="level-badge">🎮 <span id="nav-level">Lv.1</span></div>
@@ -109,7 +110,7 @@
     </div>
 
     <!-- Bottom Row: Insights + Leaks -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;">
+    <div class="charts-grid" style="margin-bottom:40px;">
       <div class="card">
         <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px;">🤖 AI Insights</h3>
         <div id="a-insights-list">
@@ -132,10 +133,10 @@
   </div>
 </div>
 
-<script src="/js/api.js"></script>
-<script src="/js/notifications.js"></script>
-<script src="/js/habitHeatmap.js"></script>
-<script src="/js/analytics.js"></script>
+<script src="/js/api.js?v=8"></script>
+<script src="/js/notifications.js?v=8"></script>
+<script src="/js/habitHeatmap.js?v=8"></script>
+<script src="/js/analytics.js?v=8"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('heatmapContainer');

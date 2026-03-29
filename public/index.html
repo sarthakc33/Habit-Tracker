@@ -48,7 +48,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16
 .magnetic{transition:transform .3s var(--ease)}
 
 /* WAVE EMOJI */
-.wave{display:inline-block;animation:waveHand 2.5s ease-in-out infinite;transform-origin:70% 70%}
+.wave{display:inline-block;animation:waveHand 2.5s ease-in-out infinite;transform-origin:70% 70%;font-family:"Segoe UI Emoji","Apple Color Emoji",sans-serif !important;font-weight:400 !important;color:initial !important;-webkit-text-fill-color:initial !important}
 @keyframes waveHand{0%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}30%{transform:rotate(14deg)}40%{transform:rotate(-4deg)}50%{transform:rotate(10deg)}60%,100%{transform:rotate(0)}}
 
 /* COUNTER PULSE */
@@ -404,6 +404,7 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
       <li><a href="/" class="active">📊 Dashboard</a></li>
       <li><a href="/planner">📋 Planner</a></li>
       <li><a href="/tracker">⏱ Tracker</a></li>
+      <li><a href="/plant">🌱 Plant</a></li>
       <li><a href="/analytics">📈 Analytics</a></li>
     </ul>
     <div class="nav-right">
@@ -516,9 +517,9 @@ nav.scrolled{box-shadow:0 8px 40px rgba(0,0,0,.6)}
   </div>
 </div>
 
-<script src="/js/api.js"></script>
-<script src="/js/notifications.js"></script>
-<script src="/js/ui_animations.js"></script>
+<script src="/js/api.js?v=8"></script>
+<script src="/js/notifications.js?v=8"></script>
+<script src="/js/ui_animations.js?v=8"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -643,7 +644,7 @@ function renderBarChart(s){
   document.getElementById('no-bar-data').style.display=data.length===0?'block':'none';
   ctx.style.display=data.length===0?'none':'block';
   if(!data.length)return;if(barChart)barChart.destroy();
-  barChart=new Chart(ctx,{type:'bar',data:{labels:data.map(t=>t.name),datasets:[{label:'Planned (min)',data:data.map(t=>t.planned),backgroundColor:'rgba(0,245,255,.4)',borderColor:'var(--c-cyan)',borderWidth:1,borderRadius:6,borderSkipped:false},{label:'Actual (min)',data:data.map(t=>t.actual),backgroundColor:'rgba(191,0,255,.4)',borderColor:'var(--c-violet)',borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'var(--text-2)',font:{family:'JetBrains Mono',size:11}}},tooltip:{backgroundColor:'var(--bg2)',borderColor:'rgba(0,245,255,.2)',borderWidth:1}},scales:{x:{ticks:{color:'var(--text-2)',font:{size:11}},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'var(--text-2)',font:{size:11}},grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}},animation:{duration:1200,easing:'easeInOutQuart'}}});
+  barChart=new Chart(ctx,{type:'bar',data:{labels:data.map(t=>t.name),datasets:[{label:'Planned (min)',data:data.map(t=>t.planned),backgroundColor:'rgba(0,245,255,.4)',borderColor:'var(--c-cyan)',borderWidth:1,borderRadius:6,borderSkipped:false},{label:'Actual (min)',data:data.map(t=>t.actual),backgroundColor:'rgba(191,0,255,.4)',borderColor:'var(--c-violet)',borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#ffffff',font:{family:'JetBrains Mono',size:11}}},tooltip:{backgroundColor:'var(--bg2)',borderColor:'rgba(0,245,255,.2)',borderWidth:1}},scales:{x:{ticks:{color:'#ffffff',font:{size:11}},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'#ffffff',font:{size:11}},grid:{color:'rgba(255,255,255,.05)'},beginAtZero:true}},animation:{duration:1200,easing:'easeInOutQuart'}}});
 }
 
 function formatSecAsTime(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }

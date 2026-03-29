@@ -7,13 +7,14 @@ let currentDateData = null;
 let currentFilter = 'all';
 let deleteTargetId = null;
 
-let currentSelectedDate = new Date().toISOString().split('T')[0];
+const _getLocD = d => { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; };
+let currentSelectedDate = _getLocD(new Date());
 let calStrip;
 
 function formatSecAsTime(s){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60); return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
 
 async function loadTasksForDate(dateStr) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = _getLocD(new Date());
   const isPast = dateStr < today;
   const isToday = dateStr === today;
 
@@ -40,7 +41,7 @@ async function loadTasksForDate(dateStr) {
       window.location.href = '/login';
       return;
     }
-    const res = await fetch(`/api/calendar/tasks?date=${dateStr}`, {
+    const res = await fetch(`${BASE}/calendar/tasks?date=${dateStr}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();
@@ -136,7 +137,7 @@ function renderTasksHTML(data) {
         <div class="task-time-bar"><div class="task-time-fill" style="width:${pct}%;background:${planColor};"></div></div>
       </div>
       <div class="task-actions">
-        ${!isDone && currentDateData && currentDateData.date === new Date().toISOString().split('T')[0] ? `<a href="/tracker" class="btn btn-ghost btn-sm btn-icon" title="Track">▶</a>` : ''}
+        ${!isDone && currentDateData && currentDateData.date === _getLocD(new Date()) ? `<a href="/tracker" class="btn btn-ghost btn-sm btn-icon" title="Track">▶</a>` : ''}
         <button class="btn btn-ghost btn-sm btn-icon" onclick="openEditModal('${t.id}')" title="Edit">✏️</button>
         <button class="btn btn-danger btn-sm btn-icon" onclick="openDeleteModal('${t.id}')" title="Delete">🗑️</button>
       </div>
@@ -167,7 +168,7 @@ function openAddModal() {
   document.getElementById('modal-submit-btn').textContent = 'Add Task';
   document.getElementById('task-form').reset();
   document.getElementById('edit-task-id').value = '';
-  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-date').value = _getLocD(new Date());
   document.getElementById('time-suggestion').style.display = 'none';
   document.getElementById('f-recurring').checked = false;
   toggleRecurring();
@@ -293,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('sort-select')?.addEventListener('change', () => { /* Handle sorts if necessary */ });
   const dateInput = document.getElementById('f-date');
-  if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+  if (dateInput) dateInput.value = _getLocD(new Date());
   
   calStrip = new CalendarStrip(
     document.getElementById('calendarStripContainer'),

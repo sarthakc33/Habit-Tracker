@@ -69,7 +69,7 @@ class HabitHeatmap {
 
     try {
       const token = localStorage.getItem('rc_token');
-      const res = await fetch(`/api/calendar/heatmap?range=${this.range}&type=both`, {
+      const res = await fetch(`${BASE}/calendar/heatmap?range=${this.range}&type=both`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       this.data = await res.json();

@@ -2,10 +2,11 @@
 // REALITY CHECK - API Helper + Auth
 // =============================================
 
-// Automatically switch between Local and Production databases
-const BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000/api'
-  : 'https://habit-tracker-vlkj.onrender.com/api';
+const isMobileApp = !!window.Capacitor;
+const isLocalhost = ['localhost', '127.0.0.1', '::1', ''].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+const isDev = isLocalhost && !isMobileApp;
+const localBase = `http://${window.location.hostname || 'localhost'}:${window.location.port || '3000'}/api`;
+const BASE = isDev ? localBase : 'https://habit-tracker-v1kj.onrender.com/api';
 
 // --- Auth Token Management ---
 function getToken() {

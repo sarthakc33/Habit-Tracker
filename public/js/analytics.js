@@ -5,7 +5,7 @@
 let charts = {};
 
 const CHART_DEFAULTS = {
-  color: { grid: 'rgba(255,255,255,0.04)', tick: '#64748b', legend: '#94a3b8' },
+  color: { grid: 'rgba(255,255,255,0.04)', tick: '#ffffff', legend: '#ffffff' },
   tooltip: { backgroundColor: '#12121f', borderColor: 'rgba(99,102,241,0.3)', borderWidth: 1 }
 };
 

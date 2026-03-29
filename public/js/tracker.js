@@ -8,12 +8,13 @@ let timerInterval = null;
 let elapsedSeconds = 0;
 let currentFilter = 'all';
 
-let currentSelectedDate = new Date().toISOString().split('T')[0];
+const _getLocD = d => { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; };
+let currentSelectedDate = _getLocD(new Date());
 let calStrip;
 let currentData = { tasks: [], completedHistory: [] };
 
 async function loadTasksForDate(dateStr) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = _getLocD(new Date());
   const isPast = dateStr < today;
   const isToday = dateStr === today;
 
@@ -37,7 +38,7 @@ async function loadTasksForDate(dateStr) {
   try {
     const token = localStorage.getItem('rc_token');
     if (!token) { window.location.href = '/login'; return; }
-    const res = await fetch(`/api/calendar/tasks?date=${dateStr}`, {
+    const res = await fetch(`${BASE}/calendar/tasks?date=${dateStr}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     currentData = await res.json();
@@ -60,7 +61,7 @@ function getFilteredTasks() {
     if (!uniqueIds.has(t.id)) {
       uniqueIds.add(t.id);
       const isDone = currentData.completedHistory.some(h => h.id === t.id) || t.completedOnDate || t.status === 'completed';
-      const statusToMatch = isDone ? 'completed' : t.status;
+      const statusToMatch = isDone ? 'completed' : (t.status || 'pending');
       if (currentFilter === 'all' || statusToMatch === currentFilter) {
         filtered.push({ ...t, effectiveStatus: statusToMatch, isDone });
       }
@@ -72,7 +73,7 @@ function getFilteredTasks() {
 function renderTrackerCards() {
   const grid = document.getElementById('tracker-grid');
   const tasks = getFilteredTasks();
-  const isToday = currentData.date === new Date().toISOString().split('T')[0];
+  const isToday = currentData.date === _getLocD(new Date());
 
   if (tasks.length === 0) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;padding:60px;">
@@ -98,10 +99,10 @@ function renderTrackerCards() {
           <div style="font-weight:700;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.isRecurring ? '🔁 ' : ''}${t.name}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;">
             <span class="badge badge-${t.priority.toLowerCase()}">${t.priority}</span>
-            <span class="badge badge-${t.effectiveStatus.replace('-','')}">
-              ${t.effectiveStatus === 'in-progress' ? '▶ ' : ''}${t.effectiveStatus}
+            <span class="badge badge-${(t.effectiveStatus || 'pending').replace('-','')}">
+              ${t.effectiveStatus === 'in-progress' ? '▶ ' : ''}${t.effectiveStatus || 'pending'}
             </span>
-            <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">📁 ${t.category}</span>
+            <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--text-muted);">📁 ${t.category || 'Focus'}</span>
             ${t.overdueForDate ? '<span class="badge" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">Overdue</span>' : ''}
           </div>
         </div>
@@ -226,10 +227,16 @@ function stopActiveTimerFocus() { stopTimer(); }
 function completeActiveTaskFocus() { if (activeTaskId) completeTask(activeTaskId); closeFocusMode(); }
 
 // ---- FOCUS MODE ----
-function openFocusMode() {
+async function openFocusMode() {
   if (!activeTaskId) return;
-  document.getElementById('focus-overlay').classList.add('open');
-  document.documentElement.style.overflow = 'hidden';
+  const task = allTasks.find(t => t.id === activeTaskId);
+  const estimatedMins = task ? task.estimatedTime : 25;
+  
+  // Stop current timer before leaving the tracker
+  await API.stopTimer(activeTaskId);
+  
+  // Redirect to plant
+  window.location.href = `/plant?taskId=${activeTaskId}&est=${estimatedMins}`;
 }
 function closeFocusMode() {
   document.getElementById('focus-overlay').classList.remove('open');

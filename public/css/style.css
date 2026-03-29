@@ -638,14 +638,48 @@ select.form-control option { background: #1a1a2e; color: var(--text-primary); }
 @media (max-width: 768px) {
   nav { padding: 0 16px; }
   .nav-brand .brand-sub { display: none; }
-  .page-wrapper { padding: 0 16px; }
+  .page-wrapper { padding: 0 16px; padding-bottom: 90px; }
   .page-header { padding: 24px 0 20px; }
   .page-title { font-size: 1.4rem; }
   .timer-display { font-size: 2.8rem; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .modal { padding: 24px; }
-  .nav-links { gap: 2px; }
-  .nav-links a span { display: none; }
+  nav .nav-links {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(10, 14, 23, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    z-index: 1000;
+    display: flex;
+    justify-content: space-around;
+    border: none;
+    margin: 0;
+    list-style: none;
+  }
+  .nav-links a {
+    flex-direction: column;
+    padding: 8px;
+    justify-content: center;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-3);
+  }
+  .nav-links a span {
+    display: block !important;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .nav-links a.active {
+    color: var(--c-cyan) !important;
+  }
+  .nav-links a.active span {
+    text-shadow: 0 0 10px rgba(0,229,255,0.4);
+  }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }

@@ -1086,7 +1086,11 @@ async function handleSubmit(e) {
   btn.textContent = '⏳ Processing...';
 
   try {
-    const BASE = window.location.origin + '/api';
+    const isMobileApp = !!window.Capacitor;
+    const isLocalhost = ['localhost', '127.0.0.1', '::1', ''].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+    const isDev = isLocalhost && !isMobileApp;
+    const localBase = `http://${window.location.hostname || 'localhost'}:${window.location.port || '3000'}/api`;
+    const BASE = isDev ? localBase : 'https://habit-tracker-v1kj.onrender.com/api';
     const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
     const res = await fetch(BASE + endpoint, {
       method: 'POST',
