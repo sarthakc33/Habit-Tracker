@@ -189,26 +189,42 @@ async function startTimer(taskId) {
   }
   try {
     const task = allTasks.find(t => t.id === taskId);
-    await API.startTimer(taskId);
-    await API.awardXP('start_timer');
-    activeTaskId = taskId;
-    elapsedSeconds = Math.round((task?.actualTime || 0) * 60);
+    if (!task) {
+      console.warn('Task not found in local state:', taskId);
+      return showToast('Task data not loaded. Please refresh.', 'error');
+    }
 
-    document.getElementById('active-timer-card').style.display = 'block';
-    document.getElementById('active-task-name').textContent = task?.name || '—';
-    document.getElementById('focus-task-name').textContent = task?.name || '—';
-    document.getElementById('focus-est').textContent = formatMins(task?.estimatedTime || 0);
-    document.getElementById('focus-btn').disabled = false;
+    console.log('Starting timer for task:', taskId);
+    const updatedTask = await API.startTimer(taskId);
+    await API.awardXP('start_timer');
+    
+    activeTaskId = taskId;
+    elapsedSeconds = Math.round((updatedTask.actualTime || 0) * 60);
+
+    const card = document.getElementById('active-timer-card');
+    card.style.display = 'block';
+    
+    document.getElementById('active-task-name').textContent = updatedTask.name || '—';
+    const focusName = document.getElementById('focus-task-name');
+    if (focusName) focusName.textContent = updatedTask.name || '—';
+    
+    const focusEst = document.getElementById('focus-est');
+    if (focusEst) focusEst.textContent = formatMins(updatedTask.estimatedTime || 0);
+    
+    const focusBtn = document.getElementById('focus-btn');
+    if (focusBtn) focusBtn.disabled = false;
 
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       elapsedSeconds++;
       const display = formatSeconds(elapsedSeconds);
       document.getElementById('main-timer-display').textContent = display;
-      document.getElementById('focus-timer-display').textContent = display;
-      // Update focus progress bar
-      if (task?.estimatedTime) {
-        const pct = Math.min((elapsedSeconds / (task.estimatedTime * 60)) * 100, 100);
+      
+      const focusDisp = document.getElementById('focus-timer-display');
+      if (focusDisp) focusDisp.textContent = display;
+      
+      if (updatedTask.estimatedTime) {
+        const pct = Math.min((elapsedSeconds / (updatedTask.estimatedTime * 60)) * 100, 100);
         const bar = document.getElementById('focus-timebar-fill');
         if (bar) {
           bar.style.width = pct + '%';
@@ -217,10 +233,12 @@ async function startTimer(taskId) {
       }
     }, 1000);
 
-    await loadTasksForDate(currentSelectedDate);
-    showToast(`Timer started for "${task?.name}"`, 'info');
-  } catch {
-    showToast('Failed to start timer', 'error');
+    // Refresh only the list components to show 'in-progress' status
+    await renderTrackerCards(); 
+    showToast(`Timer started for "${updatedTask.name}"`, 'info');
+  } catch (err) {
+    console.error('Failed to start timer:', err);
+    showToast(err.message || 'Failed to start timer', 'error');
   }
 }
 

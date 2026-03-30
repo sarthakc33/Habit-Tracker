@@ -151,7 +151,14 @@ def start_timer(task_id):
         return jsonify({'error': 'Task not found'}), 404
         
     task = doc.to_dict()
+    if task.get('status') == 'completed':
+        return jsonify({'error': 'Cannot start timer on a completed task'}), 400
+        
     sessions = task.get('timerSessions', [])
+    # If there's already an open session, don't create another one
+    if sessions and sessions[-1].get('end') is None:
+        return jsonify(task), 200
+        
     sessions.append({'start': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'end': None})
     
     task_ref.update({

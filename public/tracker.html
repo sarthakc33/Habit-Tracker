@@ -70,14 +70,15 @@
     </div>
 
     <!-- Active Timer Spotlight -->
-    <div class="card card-glow" id="active-timer-card" style="display:none;margin-bottom:20px;text-align:center;padding:36px;">
-      <div style="font-size:0.85rem;font-weight:600;color:var(--neon-cyan);letter-spacing:0.1em;margin-bottom:8px;">▶ NOW TRACKING</div>
-      <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:700;margin-bottom:20px;" id="active-task-name">—</div>
-      <div class="timer-display running" id="main-timer-display">00:00:00</div>
-      <div style="margin-top:24px;display:flex;justify-content:center;gap:12px;">
-        <button class="btn btn-ghost btn-lg" onclick="stopActiveTimer()">⏹ Stop Timer</button>
-        <button class="btn btn-success btn-lg" onclick="completeActiveTask()">✅ Mark Complete</button>
-        <button class="btn btn-primary btn-lg" onclick="openFocusMode()">🎯 Focus Mode</button>
+    <div class="card card-glow" id="active-timer-card" style="display:none;margin-bottom:20px;text-align:center;padding:24px 20px;border-color:var(--neon-cyan);background:rgba(6,182,212,0.06);">
+      <div style="font-size:0.75rem;font-weight:800;color:var(--neon-cyan);letter-spacing:0.12em;margin-bottom:12px;opacity:0.9;">▶ NOW TRACKING</div>
+      <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;margin-bottom:12px;color:var(--text-primary);letter-spacing:0.02em;" id="active-task-name">—</div>
+      <div class="timer-display running" id="main-timer-display" style="font-size:3rem;margin:15px 0;">00:00:00</div>
+      
+      <div style="margin-top:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;">
+        <button class="btn btn-ghost btn-lg" onclick="stopActiveTimer()" style="flex:1;min-width:120px;">⏹ Stop Timer</button>
+        <button class="btn btn-success btn-lg" onclick="completeActiveTask()" style="flex:1;min-width:120px;">✅ Mark Complete</button>
+        <button class="btn btn-primary btn-lg" onclick="openFocusMode()" style="width:100%;margin-top:4px;">🎯 Focus Mode</button>
       </div>
     </div>
 
@@ -146,9 +147,9 @@
   </div>
 
 </div>
-<script src="/js/api.js?v=9"></script>
-<script src="/js/notifications.js?v=9"></script>
-<script src="/js/calendarStrip.js?v=9"></script>
-<script src="/js/tracker.js?v=9"></script>
+<script src="/js/api.js?v=10"></script>
+<script src="/js/notifications.js?v=10"></script>
+<script src="/js/calendarStrip.js?v=10"></script>
+<script src="/js/tracker.js?v=10"></script>
 </body>
 </html>

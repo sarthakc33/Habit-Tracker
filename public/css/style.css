@@ -680,6 +680,21 @@ select.form-control option { background: #1a1a2e; color: var(--text-primary); }
   .nav-links a.active span {
     text-shadow: 0 0 10px rgba(0,229,255,0.4);
   }
+
+  /* Specialized mobile tweaks for active timer */
+  #active-timer-card {
+    padding: 20px !important;
+    margin-top: 10px;
+  }
+  #active-timer-card .timer-display {
+    font-size: 2.5rem !important;
+    margin: 10px 0 !important;
+  }
+  #active-timer-card .btn-lg {
+    padding: 10px 16px !important;
+    font-size: 0.85rem !important;
+    flex: 1;
+  }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
