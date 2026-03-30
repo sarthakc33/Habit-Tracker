@@ -38,19 +38,56 @@ async function loadTasksForDate(dateStr) {
   try {
     const token = localStorage.getItem('rc_token');
     if (!token) { window.location.href = '/login'; return; }
-    const res = await fetch(`${BASE}/calendar/tasks?date=${dateStr}`, {
+
+    // Use /api/tasks + client-side filtering to avoid UTC vs local timezone mismatch
+    const res = await fetch(`${BASE}/tasks`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    currentData = await res.json();
-    currentData.date = dateStr; // Store date on object for tracking check
-    allTasks = [...currentData.tasks, ...currentData.completedHistory]; // for manual entry selection
-    
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    if (!res.ok) throw new Error('Server error');
+    const allUserTasks = await res.json();
+
+    const dateObj = new Date(dateStr + 'T00:00:00');
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dateObj.getDay()];
+
+    function isScheduledForDate(task) {
+      if (task.isRecurring || task.recurring) {
+        const repeat = task.repeat || task.recurringType;
+        if (!repeat || repeat === 'daily') return true;
+        if (repeat === 'weekdays') return dateObj.getDay() >= 1 && dateObj.getDay() <= 5;
+        if (repeat === 'weekly' || repeat === 'custom') {
+          const days = task.repeatDays || task.daysOfWeek || [];
+          return days.includes(dayName);
+        }
+      }
+      if (task.date) return task.date.slice(0, 10) === dateStr;
+      if (task.createdAt) return task.createdAt.slice(0, 10) === dateStr;
+      return false;
+    }
+
+    const scheduledTasks = allUserTasks.filter(t => isScheduledForDate(t));
+    const completedOnDate = allUserTasks.filter(t => t.completedAt && t.completedAt.slice(0, 10) === dateStr);
+    const completedIds = new Set(completedOnDate.map(t => t.id));
+
+    const activeTasks = scheduledTasks
+      .filter(t => !completedIds.has(t.id))
+      .map(t => ({
+        ...t,
+        overdueForDate: isPast && t.status !== 'completed',
+        completedOnDate: false
+      }));
+
+    currentData = { date: dateStr, isToday, isPast, tasks: activeTasks, completedHistory: completedOnDate };
+    currentData.date = dateStr;
+    allTasks = [...activeTasks, ...completedOnDate];
+
     renderTrackerCards();
     populateManualSelect();
   } catch (e) {
-    showToast('Failed to load tasks', 'error');
+    showToast('Failed to load tasks. Backend may be starting up — please wait 30s and retry.', 'error');
   }
 }
+
 
 function getFilteredTasks() {
   const merged = [...currentData.tasks, ...currentData.completedHistory];

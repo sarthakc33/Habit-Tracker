@@ -37,25 +37,59 @@ async function loadTasksForDate(dateStr) {
 
   try {
     const token = localStorage.getItem('rc_token');
-    if (!token) {
-      window.location.href = '/login';
-      return;
-    }
-    const res = await fetch(`${BASE}/calendar/tasks?date=${dateStr}`, {
+    if (!token) { window.location.href = '/login'; return; }
+
+    // Use /api/tasks and filter client-side — avoids UTC vs local timezone mismatch
+    const res = await fetch(`${BASE}/tasks`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    const data = await res.json();
-    
-    // We update allTasks so the stats still work mostly
-    currentDateData = data;
-    allTasks = [...data.tasks, ...data.completedHistory];
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    if (!res.ok) throw new Error('Server error');
+    const allUserTasks = await res.json();
+
+    // Client-side date matching — reliable across all timezones
+    const dateObj = new Date(dateStr + 'T00:00:00');
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dateObj.getDay()];
+
+    function isScheduledForDate(task) {
+      if (task.isRecurring || task.recurring) {
+        const repeat = task.repeat || task.recurringType;
+        if (!repeat || repeat === 'daily') return true;
+        if (repeat === 'weekdays') return dateObj.getDay() >= 1 && dateObj.getDay() <= 5;
+        if (repeat === 'weekly' || repeat === 'custom') {
+          const days = task.repeatDays || task.daysOfWeek || [];
+          return days.includes(dayName);
+        }
+      }
+      // Non-recurring: use explicit date field first (set from the user's local date picker)
+      if (task.date) return task.date.slice(0, 10) === dateStr;
+      // Fallback: createdAt (same timezone caveat, but last resort)
+      if (task.createdAt) return task.createdAt.slice(0, 10) === dateStr;
+      return false;
+    }
+
+    const scheduledTasks = allUserTasks.filter(t => isScheduledForDate(t));
+    const completedOnDate = allUserTasks.filter(t => t.completedAt && t.completedAt.slice(0, 10) === dateStr);
+    const completedIds = new Set(completedOnDate.map(t => t.id));
+
+    const activeTasks = scheduledTasks
+      .filter(t => !completedIds.has(t.id))
+      .map(t => ({
+        ...t,
+        overdueForDate: isPast && t.status !== 'completed',
+        completedOnDate: false
+      }));
+
+    currentDateData = { date: dateStr, isToday, isPast, tasks: activeTasks, completedHistory: completedOnDate };
+    allTasks = [...activeTasks, ...completedOnDate];
     renderPlannerStats();
-    
     renderTaskList();
   } catch (e) {
     console.error('Failed to load tasks for date', e);
+    showToast('Failed to load tasks. Backend may be starting up — please wait 30s and retry.', 'error');
   }
 }
+
 
 function renderPlannerStats() {
   const total = allTasks.length;
